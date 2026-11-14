@@ -1,0 +1,514 @@
+/* ===== NHÓM C: WEB DASHBOARD ADMIN ===== */
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.admin-sidebar {
+  width: 245px;
+  background-color: #0f172a;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 14px;
+  flex-shrink: 0;
+}
+
+.admin-brand {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 0 12px 24px;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.admin-nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.admin-nav-link.active {
+  background-color: #1b5be0;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.admin-sidebar-footer {
+  border-top: 1px solid #1e293b;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-user-info {
+  padding: 0 10px;
+  font-size: 12.5px;
+  color: #cbd5e1;
+}
+
+.admin-user-info strong {
+  display: block;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.admin-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #ffffff;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+  max-width: 1400px;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.admin-page-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-btn-blue {
+  background: #1b5be0;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-btn-blue:hover {
+  background: #164ec4;
+}
+
+.admin-btn-green {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-btn-green:hover {
+  background: #059669;
+}
+
+/* KPI Grid (C1) */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.kpi-label {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.kpi-value.green { color: #10b981; }
+.kpi-value.amber { color: #f59e0b; }
+.kpi-value.red { color: #ef4444; }
+.kpi-value.blue { color: #1b5be0; }
+
+/* AI Predictive Alert Box */
+.predictive-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+}
+
+.predictive-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #b91c1c;
+  margin-bottom: 10px;
+}
+
+.predictive-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: #dc2626;
+  line-height: 1.5;
+}
+
+/* 2 Columns Grid */
+.admin-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.admin-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+
+.admin-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+/* Biểu đồ cột (SVG / CSS) */
+.chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 170px;
+  padding: 16px 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.chart-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 135px;
+}
+
+.bar-ai {
+  width: 24px;
+  background-color: #1b5be0;
+  border-radius: 5px 5px 0 0;
+  transition: height 0.3s ease;
+}
+
+.bar-ktv {
+  width: 24px;
+  background-color: #10b981;
+  border-radius: 5px 5px 0 0;
+  transition: height 0.3s ease;
+}
+
+.chart-label {
+  font-size: 12px;
+  color: #64748b;
+  padding-bottom: 6px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #475569;
+  justify-content: center;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13.5px;
+  color: #334155;
+}
+
+/* Table (C2) */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.search-input {
+  width: 340px;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 13.5px;
+  outline: none;
+}
+.search-input:focus {
+  border-color: #1b5be0;
+  background: #ffffff;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px 14px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.code-link {
+  color: #1b5be0;
+  font-weight: 600;
+}
+
+.status-pill-active {
+  background: #ecfdf5;
+  color: #059669;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pill-repair {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* QR Grid (C3) */
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.qr-sticker-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #ffffff;
+}
+
+.qr-sticker-code {
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.qr-sticker-sub {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+/* Shifts (C4) */
+.shift-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.shift-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.shift-card.online {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.shift-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.shift-card:not(.online) .shift-title {
+  color: #334155;
+}
+
+.shift-meta {
+  font-size: 13px;
+  color: #475569;
+}
+
+.shift-online-dot {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #059669;
+  margin-top: 4px;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal-box {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: #334155;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Responsive & Chế độ In PDF Tem QR */
+@media (max-width: 960px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .admin-sidebar,
+  .no-print {
+    display: none !important;
+  }
+  .admin-main {
+    padding: 0;
+  }
+  .admin-card {
+    border: none;
+    padding: 0;
+  }
+  .qr-sticker-card {
+    break-inside: avoid;
+    border: 1.5px dashed #94a3b8;
+  }
+}
