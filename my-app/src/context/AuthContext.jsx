@@ -14,8 +14,8 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const login = async (email, password, selectedTabRole) => {
-    const loggedUser = await authenticateUser(email, password, selectedTabRole);
+  const login = async (email, password) => {
+    const loggedUser = await authenticateUser(email, password);
     setUser(loggedUser);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser));
     return loggedUser;

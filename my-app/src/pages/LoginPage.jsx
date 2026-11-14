@@ -7,7 +7,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { user, login, loginAsGuest } = useAuth();
 
-  const [roleTab, setRoleTab] = useState('reporter');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,7 +24,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const loggedUser = await login(email, password, roleTab);
+      const loggedUser = await login(email, password);
       if (loggedUser.role === 'ADMIN') navigate('/admin');
       else if (loggedUser.role === 'TECHNICIAN') navigate('/tech');
       else navigate('/report');
@@ -54,30 +53,7 @@ export default function LoginPage() {
       <main className="main-content">
         <div className="login-card">
           <h2 className="card-title">Đăng nhập hệ thống</h2>
-          <p className="card-subtitle">Chọn vai trò của bạn</p>
-
-          <div className="role-selector">
-            <button
-              type="button"
-              className={`role-btn ${roleTab === 'reporter' ? 'active' : ''}`}
-              onClick={() => {
-                setRoleTab('reporter');
-                setError('');
-              }}
-            >
-              Người báo cáo
-            </button>
-            <button
-              type="button"
-              className={`role-btn ${roleTab === 'technician' ? 'active' : ''}`}
-              onClick={() => {
-                setRoleTab('technician');
-                setError('');
-              }}
-            >
-              Kỹ thuật viên
-            </button>
-          </div>
+          <p className="card-subtitle">Nhập email và mật khẩu tài khoản</p>
 
           {error && <div className="auth-error-box">{error}</div>}
 

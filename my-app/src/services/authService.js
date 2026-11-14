@@ -1,5 +1,5 @@
 import { api } from './api';
 
-export async function authenticateUser(emailOrCode, password, selectedTabRole) {
-  return api.login(emailOrCode, password, selectedTabRole);
+export async function authenticateUser(emailOrCode, password) {
+  return api.login(emailOrCode, password);
 }

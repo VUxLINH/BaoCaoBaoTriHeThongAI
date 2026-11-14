@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 async function request(endpoint, options = {}) {
   let response;
@@ -21,18 +21,25 @@ async function request(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.detail || `Lỗi hệ thống (${response.status})`);
+    const responseMessage =
+      text && text.length <= 300 ? text.trim() : '';
+    throw new Error(
+      data?.message ||
+        data?.detail ||
+        responseMessage ||
+        `Lỗi hệ thống (${response.status})`
+    );
   }
   return data;
 }
 
 export const api = {
   // Auth
-  login: (email, password, selectedTabRole) =>
+  login: (email, password) =>
     request('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, selectedTabRole }),
+      body: JSON.stringify({ email, password }),
     }),
 
   // Equipments
