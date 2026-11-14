@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import { authenticateUser } from '../services/authService';
+import { api } from '../services/api';
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = 'smartschool_user';
@@ -16,6 +17,9 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const loggedUser = await authenticateUser(email, password);
+    if (loggedUser.role === 'TECHNICIAN') {
+      await api.setTechnicianPresence(loggedUser.email, true);
+    }
     setUser(loggedUser);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser));
     return loggedUser;
@@ -32,9 +36,18 @@ export function AuthProvider({ children }) {
     return guestUser;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    let presenceError;
+    if (user?.role === 'TECHNICIAN') {
+      try {
+        await api.setTechnicianPresence(user.email, false);
+      } catch (error) {
+        presenceError = error;
+      }
+    }
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    if (presenceError) throw presenceError;
   };
 
   return (

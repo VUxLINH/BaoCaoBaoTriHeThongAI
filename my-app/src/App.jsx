@@ -83,6 +83,14 @@ export default function App() {
     setEquipments(eqData);
   };
 
+  const handleUpdateEquipmentStatus = async (code, status) => {
+    const updated = await api.updateEquipmentStatus(code, status);
+    setEquipments((prev) =>
+      prev.map((equipment) => equipment.code === updated.code ? updated : equipment)
+    );
+    return updated;
+  };
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -145,7 +153,9 @@ export default function App() {
               <ProtectedRoute allowedRoles={['TECHNICIAN']}>
                 <TechTicketDetailPage
                   tickets={reports}
+                  equipments={equipments}
                   onCompleteTicket={handleCompleteTicket}
+                  onUpdateEquipmentStatus={handleUpdateEquipmentStatus}
                 />
               </ProtectedRoute>
             }

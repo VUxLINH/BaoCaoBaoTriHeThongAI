@@ -1,17 +1,51 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import AdminLayout from '../../layouts/AdminLayout';
+import { api } from '../../services/api';
+
+function getStatusLabel(status) {
+  return {
+    ACTIVE: 'Đang hoạt động',
+    MAINTENANCE: 'Đang bảo trì',
+    BROKEN: 'Đã hỏng',
+    'Đang sửa chữa': 'Đang bảo trì',
+  }[status] || status;
+}
 
 export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [equipmentRows, setEquipmentRows] = useState(equipments);
+  const [refreshError, setRefreshError] = useState('');
 
   const [newCode, setNewCode] = useState('');
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState('Máy chiếu');
   const [newRoomCode, setNewRoomCode] = useState('P.302');
 
-  const filtered = equipments.filter((eq) => {
+  useEffect(() => {
+    let active = true;
+    const loadEquipments = async () => {
+      try {
+        const data = await api.getEquipments();
+        if (active) {
+          setEquipmentRows(data);
+          setRefreshError('');
+        }
+      } catch (error) {
+        if (active) setRefreshError(error.message);
+      }
+    };
+
+    loadEquipments();
+    const intervalId = window.setInterval(loadEquipments, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const filtered = equipmentRows.filter((eq) => {
     const q = search.toLowerCase();
     return (
       eq.code.toLowerCase().includes(q) ||
@@ -20,27 +54,32 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
     );
   });
 
-  const handleCreate = (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
     if (!newCode.trim() || !newName.trim()) return;
 
     const today = new Date().toLocaleDateString('vi-VN');
-    onAddEquipment({
-      code: newCode.trim().toUpperCase(),
-      name: newName.trim(),
-      category: newCategory,
-      roomCode: newRoomCode.trim(),
-      roomFullName: `Phòng ${newRoomCode.replace('P.', '')}`,
-      area: 'Giảng đường A & B',
-      installedDate: today,
-      lastMaintenanceDate: today,
-      lastRepairDate: 'Chưa có',
-      status: 'Đang hoạt động',
-    });
-
-    setNewCode('');
-    setNewName('');
-    setShowModal(false);
+    setRefreshError('');
+    try {
+      const saved = await onAddEquipment({
+        code: newCode.trim().toUpperCase(),
+        name: newName.trim(),
+        category: newCategory,
+        roomCode: newRoomCode.trim(),
+        roomFullName: `Phòng ${newRoomCode.replace('P.', '')}`,
+        area: 'Giảng đường A & B',
+        installedDate: today,
+        lastMaintenanceDate: today,
+        lastRepairDate: 'Chưa có',
+        status: 'Đang hoạt động',
+      });
+      setEquipmentRows((previous) => [saved, ...previous]);
+      setNewCode('');
+      setNewName('');
+      setShowModal(false);
+    } catch (error) {
+      setRefreshError(error.message);
+    }
   };
 
   return (
@@ -48,6 +87,8 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
       <div className="admin-page-header">
         <h1 className="admin-page-title">Quản lý Danh mục Thiết bị</h1>
       </div>
+
+      {refreshError && <div className="auth-error-box" role="alert">{refreshError}</div>}
 
       <div className="admin-card">
         <div className="table-toolbar">
@@ -76,26 +117,31 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((eq) => (
-              <tr key={eq.code}>
-                <td className="code-link">{eq.code}</td>
-                <td>{eq.name}</td>
-                <td>{eq.roomCode}</td>
-                <td>{eq.installedDate}</td>
-                <td>{eq.lastMaintenanceDate}</td>
-                <td>
-                  <span
-                    className={
-                      eq.status === 'Đang hoạt động'
-                        ? 'status-pill-active'
-                        : 'status-pill-repair'
-                    }
-                  >
-                    {eq.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {filtered.map((eq) => {
+              const status = getStatusLabel(eq.status);
+              return (
+                <tr key={eq.code}>
+                  <td className="code-link">{eq.code}</td>
+                  <td>{eq.name}</td>
+                  <td>{eq.roomCode}</td>
+                  <td>{eq.installedDate}</td>
+                  <td>{eq.lastMaintenanceDate}</td>
+                  <td>
+                    <span
+                      className={
+                        status === 'Đang hoạt động'
+                          ? 'status-pill-active'
+                          : status === 'Đã hỏng'
+                            ? 'status-pill-broken'
+                            : 'status-pill-repair'
+                      }
+                    >
+                      {status}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -2,9 +2,17 @@ package com.smartschool.maintenance.entity;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "equipments")
 public class Equipment {
+    public static final Set<String> VALID_STATUSES = Set.of(
+            "Đang hoạt động",
+            "Đang bảo trì",
+            "Đã hỏng"
+    );
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

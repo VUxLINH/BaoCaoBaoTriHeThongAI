@@ -25,9 +25,9 @@ INSERT INTO equipments (
 ('TB-A201-AM', 'Hệ thống Loa & Micro không dây JBL', 'Âm thanh', 'A201', 'Phòng học A201 - Tầng 2', 'Khu A - Giảng đường', '2024-08-15', '2026-08-10', '2025-11-20', 'Đang hoạt động'),
 ('TB-B304-PC01', 'Máy tính trạm Dell OptiPlex 7090', 'Máy tính', 'B304', 'Phòng Thực hành Lab 304', 'Khu B - Phòng Lab', '2025-01-10', '2026-09-01', NULL, 'Đang hoạt động'),
 ('TB-B304-SW', 'Switch mạng Cisco Catalyst 2960', 'Thiết bị mạng', 'B304', 'Phòng Thực hành Lab 304', 'Khu B - Phòng Lab', '2024-05-20', '2026-09-01', NULL, 'Đang hoạt động'),
-('TB-A105-DH', 'Điều hòa âm trần Daikin 2.5HP', 'Điện lạnh', 'A105', 'Phòng học A105 - Tầng 1', 'Khu A - Giảng đường', '2023-09-01', '2026-06-15', '2025-07-10', 'Đang sửa chữa'),
-('TB-B202-MC', 'Máy chiếu Sony VPL-DX221', 'Thiết bị trình chiếu', 'B202', 'Phòng Lab Công nghệ B202', 'Khu B - Phòng Lab', '2023-10-12', '2026-05-20', '2026-01-14', 'Đang sửa chữa'),
-('TB-C101-TV', 'Màn hình tương tác thông minh Samsung 75"', 'Thiết bị trình chiếu', 'C101', 'Hội trường C101', 'Khu C - Hội trường', '2025-03-01', '2026-09-15', NULL, 'Đang sửa chữa'),
+('TB-A105-DH', 'Điều hòa âm trần Daikin 2.5HP', 'Điện lạnh', 'A105', 'Phòng học A105 - Tầng 1', 'Khu A - Giảng đường', '2023-09-01', '2026-06-15', '2025-07-10', 'Đã hỏng'),
+('TB-B202-MC', 'Máy chiếu Sony VPL-DX221', 'Thiết bị trình chiếu', 'B202', 'Phòng Lab Công nghệ B202', 'Khu B - Phòng Lab', '2023-10-12', '2026-05-20', '2026-01-14', 'Đang bảo trì'),
+('TB-C101-TV', 'Màn hình tương tác thông minh Samsung 75"', 'Thiết bị trình chiếu', 'C101', 'Hội trường C101', 'Khu C - Hội trường', '2025-03-01', '2026-09-15', NULL, 'Đã hỏng'),
 ('TB-B304-PC12', 'Máy tính trạm Dell OptiPlex 7090 #12', 'Máy tính', 'B304', 'Phòng Thực hành Lab 304', 'Khu B - Phòng Lab', '2025-01-10', '2026-09-01', '2026-10-05', 'Đang hoạt động');
 
 INSERT INTO maintenance_reports (

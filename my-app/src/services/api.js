@@ -44,6 +44,12 @@ export const api = {
 
   // Equipments
   getEquipments: () => request('/equipments'),
+  updateEquipmentStatus: (code, status) =>
+    request(`/equipments/${encodeURIComponent(code)}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    }),
   createEquipment: (equipment) =>
     request('/equipments', {
       method: 'POST',
@@ -95,6 +101,12 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(shift),
+    }),
+  setTechnicianPresence: (email, isOnline) =>
+    request('/shifts/presence', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, isOnline }),
     }),
   toggleShiftOnline: (id) =>
     request(`/shifts/${id}/toggle`, { method: 'PUT' }),

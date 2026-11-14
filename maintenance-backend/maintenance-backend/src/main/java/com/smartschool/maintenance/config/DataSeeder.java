@@ -6,6 +6,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Configuration
 public class DataSeeder {
 
@@ -78,7 +81,7 @@ public class DataSeeder {
                 e3.setInstalledDate("20/01/2024");
                 e3.setLastMaintenanceDate("15/08/2026");
                 e3.setLastRepairDate("02/06/2026");
-                e3.setStatus("Đang sửa chữa");
+                e3.setStatus("Đang bảo trì");
                 equipRepo.save(e3);
             }
 
@@ -105,7 +108,8 @@ public class DataSeeder {
                 r1.setRoomBadge("PHÒNG 302");
                 r1.setDescription("Máy lạnh bật 15 phút bị ngắt aptomat, có mùi khét nhẹ và chảy nước ở dàn lạnh.");
                 r1.setReporterName("Cô Lan (GV)");
-                r1.setReportedTime("09:40");
+                r1.setReportedTime(LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
                 r1.setAiSeverity("COMPLEX");
                 r1.setStatus("WAITING_TECH");
                 r1.setAssignedTechName("Anh Nguyễn Văn B");

@@ -3,17 +3,37 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Bot, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import MobileAppLayout from '../../layouts/MobileAppLayout';
 
-export default function TechTicketDetailPage({ tickets, onCompleteTicket }) {
+const normalizeEquipmentStatus = (status) => {
+  if (status === 'ACTIVE') return 'Đang hoạt động';
+  if (status === 'BROKEN') return 'Đã hỏng';
+  if (status === 'MAINTENANCE' || status === 'Đang sửa chữa') return 'Đang bảo trì';
+  return ['Đang hoạt động', 'Đang bảo trì', 'Đã hỏng'].includes(status)
+    ? status
+    : 'Đang hoạt động';
+};
+
+export default function TechTicketDetailPage({
+  tickets,
+  equipments = [],
+  onCompleteTicket,
+  onUpdateEquipmentStatus,
+}) {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const ticket = tickets.find((t) => String(t.id) === String(id)) || tickets[0];
-
+  const equipment = equipments.find((item) => item.code === ticket?.equipmentCode);
 
   const todayStr = new Date().toLocaleDateString('vi-VN');
   const [rootCauseNote, setRootCauseNote] = useState(ticket?.rootCauseNote || '');
   const [replacedParts, setReplacedParts] = useState(ticket?.replacedParts || '');
   const [imageAfterPreview, setImageAfterPreview] = useState(null);
+  const [equipmentStatus, setEquipmentStatus] = useState(null);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [statusError, setStatusError] = useState('');
+  const [savingStatus, setSavingStatus] = useState(false);
+  const [completionError, setCompletionError] = useState('');
+  const [completing, setCompleting] = useState(false);
 
   if (!ticket) {
     return (
@@ -38,16 +58,44 @@ export default function TechTicketDetailPage({ tickets, onCompleteTicket }) {
     }
   };
 
-  const handleComplete = (e) => {
+  const handleUpdateEquipmentStatus = async (e) => {
+    e.preventDefault();
+    if (!equipment) return;
+
+    const selectedStatus = equipmentStatus ?? normalizeEquipmentStatus(equipment.status);
+    setSavingStatus(true);
+    setStatusMessage('');
+    setStatusError('');
+    try {
+      const updated = await onUpdateEquipmentStatus(equipment.code, selectedStatus);
+      setEquipmentStatus(normalizeEquipmentStatus(updated.status));
+      setStatusMessage('Đã cập nhật trạng thái thiết bị.');
+    } catch (error) {
+      setStatusError(error.message);
+    } finally {
+      setSavingStatus(false);
+    }
+  };
+
+  const handleComplete = async (e) => {
     e.preventDefault();
     if (!rootCauseNote.trim()) return;
 
-    onCompleteTicket(ticket.id, {
-      rootCauseNote,
-      replacedParts,
-      completedDate: todayStr,
-    });
-    navigate('/tech');
+    setCompleting(true);
+    setCompletionError('');
+    try {
+      await onCompleteTicket(ticket.id, {
+        rootCauseNote,
+        replacedParts,
+        completedDate: todayStr,
+        equipmentStatus: equipmentStatus ?? normalizeEquipmentStatus(equipment?.status),
+      });
+      navigate('/tech');
+    } catch (error) {
+      setCompletionError(error.message);
+    } finally {
+      setCompleting(false);
+    }
   };
 
   const isCompleted = ticket.status === 'COMPLETED';
@@ -97,6 +145,29 @@ export default function TechTicketDetailPage({ tickets, onCompleteTicket }) {
             {isCompleted ? 'Đã hoàn tất sửa chữa' : 'Đang tiến hành sửa'}
           </span>
         </div>
+
+        {equipment && (
+          <form onSubmit={handleUpdateEquipmentStatus} className="info-card form-stack">
+            <div className="form-group">
+              <label htmlFor="equipment-status">Trạng thái thiết bị</label>
+              <select
+                id="equipment-status"
+                className="form-input"
+                value={equipmentStatus ?? normalizeEquipmentStatus(equipment.status)}
+                onChange={(e) => setEquipmentStatus(e.target.value)}
+              >
+                <option value="Đang hoạt động">Đang hoạt động</option>
+                <option value="Đang bảo trì">Đang bảo trì</option>
+                <option value="Đã hỏng">Đã hỏng</option>
+              </select>
+            </div>
+            <button type="submit" className="btn-primary" disabled={savingStatus}>
+              {savingStatus ? 'Đang lưu...' : 'Lưu trạng thái thiết bị'}
+            </button>
+            {statusMessage && <p role="status">{statusMessage}</p>}
+            {statusError && <p className="auth-error-box" role="alert">{statusError}</p>}
+          </form>
+        )}
 
         {/* Ảnh hiện trường từ người báo cáo */}
         <div className="form-group">
@@ -166,10 +237,11 @@ export default function TechTicketDetailPage({ tickets, onCompleteTicket }) {
           </div>
 
           {!isCompleted && (
-            <button type="submit" className="btn-success">
-              Xác nhận Hoàn tất sửa chữa
+            <button type="submit" className="btn-success" disabled={completing}>
+              {completing ? 'Đang lưu...' : 'Xác nhận Hoàn tất sửa chữa'}
             </button>
           )}
+          {completionError && <p className="auth-error-box" role="alert">{completionError}</p>}
         </form>
       </div>
     </MobileAppLayout>

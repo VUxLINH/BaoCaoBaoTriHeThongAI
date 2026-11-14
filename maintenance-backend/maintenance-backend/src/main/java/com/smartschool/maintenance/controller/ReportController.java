@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -58,7 +59,8 @@ public class ReportController {
     @PostMapping
     public MaintenanceReport createReport(@RequestBody MaintenanceReport report) {
         if (report.getReportedTime() == null || report.getReportedTime().isBlank()) {
-            report.setReportedTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+            report.setReportedTime(LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         }
 
         if ("WAITING_TECH".equals(report.getStatus())) {
@@ -84,6 +86,12 @@ public class ReportController {
 
     @PutMapping("/{id}/complete")
     public ResponseEntity<?> completeReport(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String equipmentStatus = body.getOrDefault("equipmentStatus", "Đang hoạt động");
+        if (!Equipment.VALID_STATUSES.contains(equipmentStatus)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Trạng thái thiết bị không hợp lệ."));
+        }
+
         return reportRepo.findById(id).map(r -> {
             String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             r.setStatus("COMPLETED");
@@ -93,7 +101,7 @@ public class ReportController {
 
             equipRepo.findByCodeIgnoreCase(r.getEquipmentCode()).ifPresent(eq -> {
                 eq.setLastRepairDate(today);
-                eq.setStatus("Đang hoạt động");
+                eq.setStatus(equipmentStatus);
                 equipRepo.save(eq);
             });
 

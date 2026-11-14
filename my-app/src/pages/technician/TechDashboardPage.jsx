@@ -1,15 +1,59 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, LogOut } from 'lucide-react';
 import MobileAppLayout from '../../layouts/MobileAppLayout';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../services/api';
 
 export default function TechDashboardPage({ tickets, onAcceptTicket }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [shifts, setShifts] = useState([]);
+  const [presenceError, setPresenceError] = useState('');
+  const [updatingPresence, setUpdatingPresence] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const loadShifts = async () => {
+      try {
+        const data = await api.getShifts();
+        if (active) {
+          setShifts(data);
+          setPresenceError('');
+        }
+      } catch (error) {
+        if (active) setPresenceError(error.message);
+      }
+    };
+
+    loadShifts();
+    const intervalId = window.setInterval(loadShifts, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const waitingTickets = tickets.filter((t) => t.status === 'WAITING_TECH');
   const inProgressTickets = tickets.filter((t) => t.status === 'IN_PROGRESS');
   const completedTickets = tickets.filter((t) => t.status === 'COMPLETED');
+  const ownShifts = shifts.filter(
+    (shift) => shift.techName?.toLocaleLowerCase() === user?.fullName?.toLocaleLowerCase()
+  );
+  const isOnline = ownShifts.length > 0 && ownShifts.every((shift) => shift.isOnline);
+
+  const handleTogglePresence = async () => {
+    setUpdatingPresence(true);
+    setPresenceError('');
+    try {
+      const updatedShifts = await api.setTechnicianPresence(user.email, !isOnline);
+      setShifts(updatedShifts);
+    } catch (error) {
+      setPresenceError(error.message);
+    } finally {
+      setUpdatingPresence(false);
+    }
+  };
 
   const handleAcceptAndOpen = (ticket) => {
     onAcceptTicket(ticket.id);
@@ -23,8 +67,12 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      window.alert(`Đã đăng xuất nhưng chưa cập nhật được trạng thái ca trực: ${error.message}`);
+    }
     navigate('/login');
   };
 
@@ -32,24 +80,37 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
     <MobileAppLayout>
       <header className="blue-topbar">
         <div>
-          <h1>Thông báo Kỹ thuật viên trực</h1>
-          <p>Ca trực: {user?.fullName || 'Anh Nguyễn Văn B'}</p>
+          <h1>Kỹ thuật viên</h1>
+          <p>{user?.shift || 'Chưa có ca trực'} • {user?.area || user?.fullName}</p>
+          <p style={{ color: isOnline ? '#bbf7d0' : '#fecaca', fontWeight: 600 }}>
+            ● {isOnline ? 'Đang trực online' : 'Đang ngoài ca'}
+          </p>
         </div>
-        <button className="topbar-logout-btn" onClick={handleLogout}>
-          <LogOut size={14} />
-          <span>Thoát</span>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <button
+            type="button"
+            className="topbar-logout-btn"
+            onClick={handleTogglePresence}
+            disabled={updatingPresence}
+          >
+            <span>{updatingPresence ? 'Đang cập nhật...' : isOnline ? 'Kết thúc ca' : 'Bắt đầu ca'}</span>
+          </button>
+          <button className="topbar-logout-btn" onClick={handleLogout}>
+            <LogOut size={14} />
+            <span>Thoát</span>
+          </button>
+        </div>
       </header>
 
       <div className="screen-body">
-        {/* Cảnh báo sự cố mới từ hệ thống */}
+        {presenceError && <p className="auth-error-box" role="alert">{presenceError}</p>}
+        {ownShifts.length === 0 && !presenceError && (
+          <p className="auth-error-box" role="alert">Tài khoản chưa có ca trực khớp với họ tên.</p>
+        )}
         {waitingTickets.length > 0 && (
           <div className="tech-alert-banner">
             <div className="tech-alert-title">
-              MỚI: Sự cố phức tạp cần xử lý ({waitingTickets.length})
-            </div>
-            <div className="tech-alert-sub">
-              Hệ thống chuyển hướng tự động • Vừa xong
+              Sự cố chờ tiếp nhận ({waitingTickets.length})
             </div>
           </div>
         )}

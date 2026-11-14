@@ -179,32 +179,6 @@
 .kpi-value.red { color: #ef4444; }
 .kpi-value.blue { color: #1b5be0; }
 
-/* AI Predictive Alert Box */
-.predictive-box {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 14px;
-  padding: 18px 20px;
-  margin-bottom: 22px;
-}
-
-.predictive-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #b91c1c;
-  margin-bottom: 10px;
-}
-
-.predictive-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  color: #dc2626;
-  line-height: 1.5;
-}
-
 /* 2 Columns Grid */
 .admin-two-col {
   display: grid;
@@ -365,6 +339,15 @@
   font-weight: 600;
 }
 
+.status-pill-broken {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 /* QR Grid (C3) */
 .qr-grid {
   display: grid;
@@ -403,6 +386,12 @@
   gap: 18px;
 }
 
+.shift-sync-note {
+  color: #64748b;
+  font-size: 12px;
+  margin: -8px 0 16px;
+}
+
 .shift-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -433,11 +422,20 @@
   color: #475569;
 }
 
-.shift-online-dot {
+.shift-status-button {
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  color: #059669;
+  cursor: pointer;
   font-size: 12.5px;
   font-weight: 600;
-  color: #059669;
   margin-top: 4px;
+  padding: 0;
+}
+
+.shift-card:not(.online) .shift-status-button {
+  color: #64748b;
 }
 
 /* Modal */

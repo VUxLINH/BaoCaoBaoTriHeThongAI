@@ -35,4 +35,23 @@ public class EquipmentController {
     public Equipment create(@RequestBody Equipment equipment) {
         return equipRepo.save(equipment);
     }
+
+    @PutMapping("/{code}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable String code,
+            @RequestBody(required = false) Map<String, String> body) {
+        String status = body == null ? null : body.get("status");
+        if (status == null || !Equipment.VALID_STATUSES.contains(status)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Trạng thái thiết bị không hợp lệ."));
+        }
+
+        return equipRepo.findByCodeIgnoreCase(code)
+                .<ResponseEntity<?>>map(equipment -> {
+                    equipment.setStatus(status);
+                    return ResponseEntity.ok(equipRepo.save(equipment));
+                })
+                .orElseGet(() -> ResponseEntity.status(404)
+                        .body(Map.of("message", "Không tìm thấy thiết bị có mã: " + code)));
+    }
 }

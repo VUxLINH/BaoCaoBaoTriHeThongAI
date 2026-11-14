@@ -14,8 +14,12 @@ export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      window.alert(`Đã đăng xuất nhưng chưa cập nhật được trạng thái ca trực: ${error.message}`);
+    }
     navigate('/login');
   };
 
@@ -33,7 +37,7 @@ export default function AdminLayout({ children }) {
             }
           >
             <LayoutDashboard size={17} />
-            <span>Tổng quan &amp; AI Dự đoán</span>
+            <span>Tổng quan</span>
           </NavLink>
 
           <NavLink

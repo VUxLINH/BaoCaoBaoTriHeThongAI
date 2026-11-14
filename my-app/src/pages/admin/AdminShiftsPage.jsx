@@ -9,28 +9,57 @@ export default function AdminShiftsPage() {
   const [shiftName, setShiftName] = useState('Ca Tối (18:00 - 21:00)');
   const [techName, setTechName] = useState('');
   const [area, setArea] = useState('Giảng đường A & B');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    api.getShifts().then(setShifts).catch(console.error);
+    let active = true;
+    const loadShifts = async () => {
+      try {
+        const data = await api.getShifts();
+        if (active) {
+          setShifts(data);
+          setError('');
+        }
+      } catch (loadError) {
+        if (active) setError(loadError.message);
+      }
+    };
+
+    loadShifts();
+    const intervalId = window.setInterval(loadShifts, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   const toggleOnline = async (id) => {
-    const updated = await api.toggleShiftOnline(id);
-    setShifts((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    setError('');
+    try {
+      const updated = await api.toggleShiftOnline(id);
+      setShifts((prev) => prev.map((shift) => (shift.id === id ? updated : shift)));
+    } catch (toggleError) {
+      setError(toggleError.message);
+    }
   };
 
   const handleAddShift = async (e) => {
     e.preventDefault();
     if (!techName.trim()) return;
-    const created = await api.createShift({
-      shiftName,
-      techName: techName.trim(),
-      area,
-      isOnline: true,
-    });
-    setShifts((prev) => [...prev, created]);
-    setTechName('');
-    setShowModal(false);
+    setError('');
+    try {
+      const created = await api.createShift({
+        shiftName,
+        techName: techName.trim(),
+        area,
+        isOnline: false,
+      });
+      setShifts((prev) => [...prev, created]);
+      setTechName('');
+      setShowModal(false);
+    } catch (saveError) {
+      setError(saveError.message);
+    }
   };
 
   return (
@@ -45,8 +74,11 @@ export default function AdminShiftsPage() {
         </button>
       </div>
 
+      {error && <div className="auth-error-box" role="alert">{error}</div>}
+
       <div className="admin-card">
-        <h3 className="admin-card-title">Lịch trực Tuần hiện tại</h3>
+        <h3 className="admin-card-title">Ca trực và trạng thái KTV</h3>
+        <p className="shift-sync-note">Trạng thái được đồng bộ tự động mỗi 5 giây.</p>
         <div className="shift-grid">
           {shifts.map((shift) => (
             <div
@@ -56,17 +88,14 @@ export default function AdminShiftsPage() {
               <div className="shift-title">{shift.shiftName}</div>
               <div className="shift-meta">KTV: {shift.techName}</div>
               <div className="shift-meta">Khu vực: {shift.area}</div>
-              <div
-                className="shift-online-dot"
-                style={{
-                  color: shift.isOnline ? '#059669' : '#64748b',
-                  cursor: 'pointer',
-                }}
+              <button
+                type="button"
+                className="shift-status-button"
                 onClick={() => toggleOnline(shift.id)}
-                title="Bấm để đổi trạng thái trực"
+                aria-label={`Đổi trạng thái ca của ${shift.techName}`}
               >
                 {shift.isOnline ? '• Đang trực (Online)' : '• Ngoài ca trực (Offline)'}
-              </div>
+              </button>
             </div>
           ))}
         </div>
@@ -92,10 +121,10 @@ export default function AdminShiftsPage() {
                 />
               </div>
               <div className="form-group">
-                <label>Kỹ thuật viên phụ trách *</label>
+                <label>KTV phụ trách (nhập đúng tên tài khoản) *</label>
                 <input
                   className="form-input"
-                  placeholder="VD: Anh Lê Minh D"
+                  placeholder="VD: Phạm Huy Hoàng (KTV)"
                   value={techName}
                   onChange={(e) => setTechName(e.target.value)}
                   required

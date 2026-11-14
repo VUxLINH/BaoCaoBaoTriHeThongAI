@@ -45,8 +45,12 @@ export default function ScanDevicePage({ equipments, recentReports }) {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (logoutError) {
+      window.alert(`Đã đăng xuất nhưng chưa cập nhật được trạng thái ca trực: ${logoutError.message}`);
+    }
     navigate('/login');
   };
 
