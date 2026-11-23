@@ -1,22 +1,21 @@
 package com.smartschool.maintenance.controller;
 
 import com.smartschool.maintenance.entity.User;
-import com.smartschool.maintenance.repository.UserRepository;
+import com.smartschool.maintenance.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Locale;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final UserRepository userRepo;
+    private final AuthService authService;
 
-    public AuthController(UserRepository userRepo) {
-        this.userRepo = userRepo;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
@@ -33,13 +32,13 @@ public class AuthController {
                     .body(Map.of("message", "Vui lòng nhập email và mật khẩu."));
         }
 
-        User user = userRepo.findByEmailIgnoreCase(email).orElse(null);
-        if (user == null || !user.getPassword().equals(password)) {
+        User user = authService.authenticate(email, password).orElse(null);
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Email/Mã NV hoặc mật khẩu không chính xác."));
         }
 
-        String role = normalizeRole(user.getRole());
+        String role = authService.normalizeRole(user.getRole());
         if (role == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("message", "Tài khoản chưa được gán vai trò hợp lệ."));
@@ -53,18 +52,5 @@ public class AuthController {
                 "shift", user.getShift() != null ? user.getShift() : "",
                 "area", user.getArea() != null ? user.getArea() : ""
         ));
-    }
-
-    private String normalizeRole(String role) {
-        if (role == null) {
-            return null;
-        }
-
-        return switch (role.trim().toUpperCase(Locale.ROOT)) {
-            case "REPORTER" -> "REPORTER";
-            case "TECH", "TECHNICIAN" -> "TECHNICIAN";
-            case "ADMIN" -> "ADMIN";
-            default -> null;
-        };
     }
 }

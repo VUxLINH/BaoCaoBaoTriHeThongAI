@@ -1,7 +1,7 @@
 package com.smartschool.maintenance.controller;
 
 import com.smartschool.maintenance.entity.Equipment;
-import com.smartschool.maintenance.repository.EquipmentRepository;
+import com.smartschool.maintenance.service.EquipmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,20 +12,20 @@ import java.util.Map;
 @RequestMapping("/api/equipments")
 public class EquipmentController {
 
-    private final EquipmentRepository equipRepo;
+    private final EquipmentService equipmentService;
 
-    public EquipmentController(EquipmentRepository equipRepo) {
-        this.equipRepo = equipRepo;
+    public EquipmentController(EquipmentService equipmentService) {
+        this.equipmentService = equipmentService;
     }
 
     @GetMapping
     public List<Equipment> getAll() {
-        return equipRepo.findAll();
+        return equipmentService.findAll();
     }
 
     @GetMapping("/{code}")
     public ResponseEntity<?> getByCode(@PathVariable String code) {
-        return equipRepo.findByCodeIgnoreCase(code)
+        return equipmentService.findByCode(code)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(404)
                         .body(Map.of("message", "Không tìm thấy thiết bị có mã: " + code)));
@@ -33,7 +33,7 @@ public class EquipmentController {
 
     @PostMapping
     public Equipment create(@RequestBody Equipment equipment) {
-        return equipRepo.save(equipment);
+        return equipmentService.create(equipment);
     }
 
     @PutMapping("/{code}/status")
@@ -46,10 +46,9 @@ public class EquipmentController {
                     .body(Map.of("message", "Trạng thái thiết bị không hợp lệ."));
         }
 
-        return equipRepo.findByCodeIgnoreCase(code)
+        return equipmentService.updateStatus(code, status)
                 .<ResponseEntity<?>>map(equipment -> {
-                    equipment.setStatus(status);
-                    return ResponseEntity.ok(equipRepo.save(equipment));
+                    return ResponseEntity.ok(equipment);
                 })
                 .orElseGet(() -> ResponseEntity.status(404)
                         .body(Map.of("message", "Không tìm thấy thiết bị có mã: " + code)));

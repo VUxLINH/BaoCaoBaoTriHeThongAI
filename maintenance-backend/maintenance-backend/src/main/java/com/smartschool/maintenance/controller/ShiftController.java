@@ -2,8 +2,8 @@ package com.smartschool.maintenance.controller;
 
 import com.smartschool.maintenance.entity.ShiftSchedule;
 import com.smartschool.maintenance.entity.User;
-import com.smartschool.maintenance.repository.ShiftScheduleRepository;
 import com.smartschool.maintenance.repository.UserRepository;
+import com.smartschool.maintenance.service.ShiftService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,22 +14,22 @@ import java.util.Map;
 @RequestMapping("/api/shifts")
 public class ShiftController {
 
-    private final ShiftScheduleRepository shiftRepo;
+    private final ShiftService shiftService;
     private final UserRepository userRepo;
 
-    public ShiftController(ShiftScheduleRepository shiftRepo, UserRepository userRepo) {
-        this.shiftRepo = shiftRepo;
+    public ShiftController(ShiftService shiftService, UserRepository userRepo) {
+        this.shiftService = shiftService;
         this.userRepo = userRepo;
     }
 
     @GetMapping
     public List<ShiftSchedule> getAll() {
-        return shiftRepo.findAll();
+        return shiftService.findAll();
     }
 
     @PostMapping
     public ShiftSchedule create(@RequestBody ShiftSchedule shift) {
-        return shiftRepo.save(shift);
+        return shiftService.create(shift);
     }
 
     @PutMapping("/presence")
@@ -49,29 +49,19 @@ public class ShiftController {
                     .body(Map.of("message", "Không tìm thấy tài khoản kỹ thuật viên hợp lệ."));
         }
 
-        List<ShiftSchedule> shifts = shiftRepo.findAllByTechNameIgnoreCase(user.getFullName());
+        List<ShiftSchedule> shifts = shiftService.setTechnicianOnline(user.getFullName(), isOnline);
         if (shifts.isEmpty()) {
             return ResponseEntity.status(404)
                     .body(Map.of("message", "Tài khoản chưa có ca trực được phân công theo đúng họ tên."));
         }
 
-        shifts.forEach(shift -> shift.setIsOnline(isOnline));
-        return ResponseEntity.ok(shiftRepo.saveAll(shifts));
+        return ResponseEntity.ok(shifts);
     }
 
     @PutMapping("/{id}/toggle")
     public ResponseEntity<?> toggleOnline(@PathVariable Long id) {
-        return shiftRepo.findById(id).map(s -> {
-            boolean newStatus = !Boolean.TRUE.equals(s.getIsOnline());
-            List<ShiftSchedule> assignedShifts =
-                    shiftRepo.findAllByTechNameIgnoreCase(s.getTechName());
-            assignedShifts.forEach(shift -> shift.setIsOnline(newStatus));
-            List<ShiftSchedule> savedShifts = shiftRepo.saveAll(assignedShifts);
-            return savedShifts.stream()
-                    .filter(shift -> shift.getId().equals(id))
-                    .findFirst()
-                    .<ResponseEntity<?>>map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-        }).orElse(ResponseEntity.notFound().build());
+        return shiftService.toggleOnline(id)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

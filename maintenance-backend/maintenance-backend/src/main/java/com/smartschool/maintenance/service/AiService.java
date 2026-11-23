@@ -9,6 +9,8 @@ import com.google.genai.types.HttpRetryOptions;
 import com.google.genai.types.Part;
 import com.smartschool.maintenance.entity.Equipment;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import java.util.*;
 
 @Service
 public class AiService {
+
+    private static final Logger log = LoggerFactory.getLogger(AiService.class);
 
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
@@ -53,9 +57,9 @@ public class AiService {
                     .apiKey(geminiApiKey.trim())
                     .httpOptions(httpOptions)
                     .build();
-            System.out.println(">>> Đã cấu hình Gemini Client (" + MODEL_ID + "); sẽ xác nhận kết nối khi gửi yêu cầu.");
+            log.info("Gemini client configured with model {}; connection will be checked on first request.", MODEL_ID);
         } else {
-            System.out.println(">>> Chưa cấu hình GEMINI_API_KEY; hệ thống dùng chế độ dự phòng nội bộ.");
+            log.info("GEMINI_API_KEY is not configured; using the internal fallback.");
         }
     }
 
@@ -96,7 +100,7 @@ public class AiService {
                 response = geminiClient.models.generateContent(MODEL_ID, prompt, config);
             }
 
-            System.out.println(">>> Gemini phân tích xong trong: " + (System.currentTimeMillis() - start) + " ms");
+            log.info("Gemini issue analysis completed in {} ms.", System.currentTimeMillis() - start);
 
             String responseText = response.text();
             if (responseText == null || responseText.isBlank()) {
@@ -113,9 +117,7 @@ public class AiService {
             result.put("provider", "gemini");
             return result;
         } catch (Exception e) {
-            System.err.println(">>> Gemini phân tích thất bại sau "
-                    + (System.currentTimeMillis() - start) + " ms ("
-                    + e.getClass().getSimpleName() + ").");
+            log.error("Gemini issue analysis failed after {} ms.", System.currentTimeMillis() - start, e);
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
                     "Gemini không thể phân tích lúc này. Vui lòng thử lại sau.");
@@ -146,7 +148,7 @@ public class AiService {
                     .build();
 
             GenerateContentResponse response = geminiClient.models.generateContent(MODEL_ID, prompt, config);
-            System.out.println(">>> Gemini Chat xong trong: " + (System.currentTimeMillis() - start) + " ms");
+            log.info("Gemini technician chat completed in {} ms.", System.currentTimeMillis() - start);
 
             String responseText = response.text();
             if (responseText == null || responseText.isBlank()) {
@@ -160,9 +162,7 @@ public class AiService {
             result.put("provider", "gemini");
             return result;
         } catch (Exception e) {
-            System.err.println(">>> Gemini Chat thất bại sau "
-                    + (System.currentTimeMillis() - start) + " ms ("
-                    + e.getClass().getSimpleName() + ").");
+            log.error("Gemini technician chat failed after {} ms.", System.currentTimeMillis() - start, e);
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
                     "Gemini không thể trả lời lúc này. Vui lòng thử lại sau.");
