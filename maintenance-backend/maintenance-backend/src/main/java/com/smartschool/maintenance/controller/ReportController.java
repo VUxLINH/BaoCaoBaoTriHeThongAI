@@ -11,10 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
+
+    private static final Set<String> VALID_REPORT_STATUSES =
+            Set.of("WAITING_TECH", "IN_PROGRESS", "COMPLETED");
 
     private final ReportService reportService;
     private final EquipmentService equipmentService;
@@ -40,6 +44,11 @@ public class ReportController {
             @RequestParam("description") String description,
             @RequestParam(value = "image", required = false) MultipartFile image) {
 
+        if (equipmentCode.isBlank() || description.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Vui lòng chọn thiết bị và nhập mô tả sự cố."));
+        }
+
         Equipment eq = equipmentService.findByCode(equipmentCode).orElse(null);
         if (eq == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Mã thiết bị không tồn tại."));
@@ -48,8 +57,28 @@ public class ReportController {
     }
 
     @PostMapping
-    public MaintenanceReport createReport(@RequestBody MaintenanceReport report) {
-        return reportService.create(report);
+    public ResponseEntity<?> createReport(@RequestBody(required = false) MaintenanceReport report) {
+        if (report == null
+                || isBlank(report.getEquipmentCode())
+                || isBlank(report.getEquipmentName())
+                || isBlank(report.getDescription())
+                || isBlank(report.getReporterName())
+                || isBlank(report.getStatus())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Vui lòng nhập đủ thông tin thiết bị, mô tả, người báo và trạng thái."));
+        }
+
+        if (!VALID_REPORT_STATUSES.contains(report.getStatus())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Trạng thái phiếu báo không hợp lệ."));
+        }
+
+        if (equipmentService.findByCode(report.getEquipmentCode()).isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Mã thiết bị không tồn tại."));
+        }
+
+        return ResponseEntity.ok(reportService.create(report));
     }
 
     @PutMapping("/{id}/accept")
@@ -60,7 +89,14 @@ public class ReportController {
     }
 
     @PutMapping("/{id}/complete")
-    public ResponseEntity<?> completeReport(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> completeReport(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> body) {
+        if (body == null || isBlank(body.get("rootCauseNote"))) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Vui lòng nhập nguyên nhân và cách sửa."));
+        }
+
         String equipmentStatus = body.getOrDefault("equipmentStatus", "Đang hoạt động");
         if (!Equipment.VALID_STATUSES.contains(equipmentStatus)) {
             return ResponseEntity.badRequest()
@@ -74,5 +110,9 @@ public class ReportController {
                         body.getOrDefault("replacedParts", ""))
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

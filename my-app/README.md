@@ -1,16 +1,53 @@
-# React + Vite
+# Hệ thống quản lý bảo trì thiết bị trường học
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Ứng dụng gồm giao diện React/Vite, backend Java Spring Boot và cơ sở dữ liệu MySQL.
 
-Currently, two official plugins are available:
+## Yêu cầu
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- JDK 21
+- Node.js và npm
+- MySQL
 
-## React Compiler
+## Khởi tạo cơ sở dữ liệu
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Chạy `maintenance-backend/maintenance-backend/database/create-database.sql`
+từ thư mục gốc dự án trong MySQL Workbench.
 
-## Expanding the Oxlint configuration
+Backend mặc định kết nối `smartschool_db` bằng tài khoản `root` không mật khẩu.
+Nếu cấu hình MySQL khác, đặt các biến môi trường `DB_URL`, `DB_USERNAME` và
+`DB_PASSWORD` trước khi chạy backend.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Chạy backend
+
+Mở terminal tại thư mục gốc dự án:
+
+```powershell
+Set-Location .\maintenance-backend\maintenance-backend
+.\mvnw.cmd spring-boot:run
+```
+
+Backend chạy ở `http://localhost:8080`. Để gọi Gemini, cấu hình biến môi trường
+`GEMINI_API_KEY`; nếu không, hệ thống dùng bộ phân tích dự phòng nội bộ.
+
+## Chạy frontend
+
+Mở terminal khác tại thư mục gốc dự án:
+
+```powershell
+Set-Location .\my-app
+npm install
+npm run dev
+```
+
+Mở địa chỉ Vite hiển thị trong terminal, thường là `http://localhost:5173`.
+Vite tự chuyển tiếp các request `/api` tới backend ở cổng 8080.
+
+## Tài khoản demo
+
+Khi bảng người dùng còn trống, backend tự tạo tài khoản demo với mật khẩu `123`:
+
+- Admin: `admin@school.edu.vn`
+- Kỹ thuật viên: `binh.ktv@school.edu.vn`
+- Người báo cáo: `lan.gv@school.edu.vn`
+
+Không dùng tài khoản và mật khẩu demo trong môi trường thật.

@@ -21,10 +21,10 @@ export default function TechTicketDetailPage({
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const ticket = tickets.find((t) => String(t.id) === String(id)) || tickets[0];
+  const ticket = tickets.find((t) => String(t.id) === String(id));
   const equipment = equipments.find((item) => item.code === ticket?.equipmentCode);
 
-  const todayStr = new Date().toLocaleDateString('vi-VN');
+  const [todayStr] = useState(() => new Date().toLocaleDateString('vi-VN'));
   const [rootCauseNote, setRootCauseNote] = useState(ticket?.rootCauseNote || '');
   const [replacedParts, setReplacedParts] = useState(ticket?.replacedParts || '');
   const [imageAfterPreview, setImageAfterPreview] = useState(null);

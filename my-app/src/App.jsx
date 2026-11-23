@@ -78,9 +78,14 @@ export default function App() {
   const handleCompleteTicket = async (ticketId, payload) => {
     const updated = await api.completeReport(ticketId, payload);
     setReports((prev) => prev.map((t) => (t.id === ticketId ? updated : t)));
-    // Tải lại danh sách thiết bị để cập nhật "Ngày sửa gần nhất" vừa được Java cập nhật
-    const eqData = await api.getEquipments();
-    setEquipments(eqData);
+    try {
+      const equipmentData = await api.getEquipments();
+      setEquipments(equipmentData);
+    } catch (err) {
+      setDatabaseError(
+        `Phiếu đã hoàn tất nhưng chưa tải lại được danh sách thiết bị: ${err.message}`
+      );
+    }
   };
 
   const handleUpdateEquipmentStatus = async (code, status) => {

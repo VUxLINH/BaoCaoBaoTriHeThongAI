@@ -11,6 +11,8 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
   const [shifts, setShifts] = useState([]);
   const [presenceError, setPresenceError] = useState('');
   const [updatingPresence, setUpdatingPresence] = useState(false);
+  const [acceptingTicketId, setAcceptingTicketId] = useState(null);
+  const [ticketActionError, setTicketActionError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -55,9 +57,17 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
     }
   };
 
-  const handleAcceptAndOpen = (ticket) => {
-    onAcceptTicket(ticket.id);
-    navigate(`/tech/ticket/${ticket.id}`);
+  const handleAcceptAndOpen = async (ticket) => {
+    setAcceptingTicketId(ticket.id);
+    setTicketActionError('');
+    try {
+      await onAcceptTicket(ticket.id);
+      navigate(`/tech/ticket/${ticket.id}`);
+    } catch (error) {
+      setTicketActionError(error.message);
+    } finally {
+      setAcceptingTicketId(null);
+    }
   };
 
   const handleOpenActiveTicket = () => {
@@ -104,6 +114,7 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
 
       <div className="screen-body">
         {presenceError && <p className="auth-error-box" role="alert">{presenceError}</p>}
+        {ticketActionError && <p className="auth-error-box" role="alert">{ticketActionError}</p>}
         {ownShifts.length === 0 && !presenceError && (
           <p className="auth-error-box" role="alert">Tài khoản chưa có ca trực khớp với họ tên.</p>
         )}
@@ -126,9 +137,7 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
             <h3 className="equip-name" style={{ marginBottom: 0 }}>
               {ticket.equipmentName}
             </h3>
-            <p className="ticket-meta">
-              Lắp: {ticket.installedShort} • Báo lỗi: {ticket.reportedTime}
-            </p>
+            <p className="ticket-meta">Báo lỗi: {ticket.reportedTime}</p>
 
             <p className="ticket-quote-label">Mô tả lỗi từ người báo cáo:</p>
             <div className="ticket-quote-box">"{ticket.description}"</div>
@@ -141,9 +150,10 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
               type="button"
               className="btn-primary"
               style={{ marginTop: '4px' }}
+              disabled={acceptingTicketId === ticket.id}
               onClick={() => handleAcceptAndOpen(ticket)}
             >
-              Nhận xử lý sự cố
+              {acceptingTicketId === ticket.id ? 'Đang nhận phiếu...' : 'Nhận xử lý sự cố'}
             </button>
           </div>
         ))}
