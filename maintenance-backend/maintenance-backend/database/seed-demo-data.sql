@@ -83,5 +83,4 @@ INSERT INTO maintenance_reports (
 INSERT INTO shift_schedules (shift_name, tech_name, area, is_online) VALUES
 ('Ca Sáng (07:00 - 11:30)', 'Phạm Huy Hoàng (KTV)', 'Khu A - Giảng đường', TRUE),
 ('Ca Chiều (13:00 - 17:30)', 'Đặng Anh Tuấn (KTV)', 'Khu B - Phòng Lab', TRUE),
-('Ca Tối (17:30 - 21:00)', 'Võ Thành Nam (KTV)', 'Toàn trường', FALSE),
-('Ca Trực Hội trường', 'Phạm Huy Hoàng (KTV)', 'Khu C - Hội trường', TRUE);
+('Ca Tối (17:30 - 21:00)', 'Võ Thành Nam (KTV)', 'Toàn trường', FALSE);
