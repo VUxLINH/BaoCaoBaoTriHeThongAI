@@ -139,7 +139,9 @@ public class AiService {
         try {
             String prompt = """
                 Bạn là AI Trợ lý Kỹ thuật sửa chữa thiết bị trường học.
-                Thiết bị: %s. Câu hỏi: "%s".
+                Ngữ cảnh thiết bị: %s. Nếu ngữ cảnh là thiết bị trường học nói chung,
+                hãy trả lời tổng quát và không tự giả định loại/model thiết bị cụ thể.
+                Câu hỏi: "%s".
                 Trả lời ngắn gọn tối đa 5 dòng, đánh số 1, 2, 3 các bước kiểm tra.
                 """.formatted(equipmentName, question);
 
@@ -200,7 +202,10 @@ public class AiService {
     private Map<String, Object> fallbackTechChat(String equipmentName, String question) {
         String q = question.toLowerCase();
         Map<String, Object> res = new HashMap<>();
-        if (q.contains("u4")) {
+        if ("thiết bị trường học".equalsIgnoreCase(equipmentName)) {
+            res.put("text", "Gợi ý kiểm tra chung:\n1. Ngắt nguồn trước khi kiểm tra nếu có dấu hiệu mất an toàn.\n2. Xác định loại thiết bị, mã model và mô tả triệu chứng.\n3. Chỉ kiểm tra các bước phù hợp với tài liệu của nhà sản xuất.");
+            res.put("hasPdfButton", false);
+        } else if (q.contains("u4")) {
             res.put("text", "Lỗi U4 là lỗi mất kết nối giữa dàn nóng và dàn lạnh. Hãy kiểm tra:\n1. Đo thông mạch dây tín hiệu F1-F2.\n2. Kiểm tra cầu chì bo mạch dàn nóng.\n3. Nguồn điện cấp vào dàn nóng.");
             res.put("hasPdfButton", true);
         } else {

@@ -12,6 +12,7 @@ import CreateReportPage from './pages/reporter/CreateReportPage';
 import AiResultPage from './pages/reporter/AiResultPage';
 
 import TechDashboardPage from './pages/technician/TechDashboardPage';
+import TechMaintenanceCalendarPage from './pages/technician/TechMaintenanceCalendarPage';
 import TechTicketDetailPage from './pages/technician/TechTicketDetailPage';
 import TechAiAssistantPage from './pages/technician/TechAiAssistantPage';
 
@@ -20,6 +21,7 @@ import AdminEquipmentsPage from './pages/admin/AdminEquipmentsPage';
 import AdminQrCodesPage from './pages/admin/AdminQrCodesPage';
 import AdminShiftsPage from './pages/admin/AdminShiftsPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
+import AdminMaintenancePage from './pages/admin/AdminMaintenancePage';
 
 export default function App() {
   const [equipments, setEquipments] = useState([]);
@@ -63,6 +65,14 @@ export default function App() {
   const handleAddEquipment = async (newEquip) => {
     const saved = await api.createEquipment(newEquip);
     setEquipments((prev) => [saved, ...prev]);
+  };
+
+  const handleUpdateEquipmentDetails = async (code, details) => {
+    const updated = await api.updateEquipmentDetails(code, details);
+    setEquipments((prev) =>
+      prev.map((equipment) => equipment.code === updated.code ? updated : equipment)
+    );
+    return updated;
   };
 
   const handleSaveReport = async (reportPayload) => {
@@ -166,6 +176,14 @@ export default function App() {
             }
           />
           <Route
+            path="/tech/maintenance"
+            element={
+              <ProtectedRoute allowedRoles={['TECHNICIAN']}>
+                <TechMaintenanceCalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/tech/ai-assistant"
             element={
               <ProtectedRoute allowedRoles={['TECHNICIAN']}>
@@ -190,6 +208,7 @@ export default function App() {
                 <AdminEquipmentsPage
                   equipments={equipments}
                   onAddEquipment={handleAddEquipment}
+                  onUpdateEquipmentDetails={handleUpdateEquipmentDetails}
                 />
               </ProtectedRoute>
             }
@@ -207,6 +226,14 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminShiftsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/maintenance"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminMaintenancePage equipments={equipments} />
               </ProtectedRoute>
             }
           />

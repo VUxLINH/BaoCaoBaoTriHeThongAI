@@ -44,10 +44,27 @@ export default function CreateReportPage({ equipments }) {
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setImageFile(null);
+      setImagePreview(null);
+      setError('Ảnh hiện trường không được vượt quá 10 MB.');
+      e.target.value = '';
+      return;
     }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setImageFile(null);
+      setImagePreview(null);
+      setError('Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.');
+      e.target.value = '';
+      return;
+    }
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -67,6 +84,7 @@ export default function CreateReportPage({ equipments }) {
           equipment,
           roomName,
           description,
+          imageFile,
           imagePreview,
           aiResult,
         },
@@ -140,7 +158,7 @@ export default function CreateReportPage({ equipments }) {
           <label className="upload-box">
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleImageChange}
               style={{ display: 'none' }}
             />

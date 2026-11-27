@@ -36,6 +36,24 @@ public class EquipmentController {
         return equipmentService.create(equipment);
     }
 
+    @PutMapping("/{code}/details")
+    public ResponseEntity<?> updateDetails(
+            @PathVariable String code,
+            @RequestBody(required = false) Equipment details) {
+        if (details == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Thiếu thông tin chi tiết thiết bị."));
+        }
+        try {
+            return equipmentService.updateDetails(code, details)
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(404)
+                            .body(Map.of("message", "Không tìm thấy thiết bị có mã: " + code)));
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.badRequest().body(Map.of("message", error.getMessage()));
+        }
+    }
+
     @PutMapping("/{code}/status")
     public ResponseEntity<?> updateStatus(
             @PathVariable String code,

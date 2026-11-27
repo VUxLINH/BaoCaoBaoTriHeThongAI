@@ -1,10 +1,21 @@
+import { useState } from 'react';
 import { Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import AdminLayout from '../../layouts/AdminLayout';
+import Pagination from '../../components/Pagination';
+import { paginateItems } from '../../utils/pagination';
 
 export default function AdminQrCodesPage({ equipments }) {
+  const [page, setPage] = useState(1);
+  const [printingAll, setPrintingAll] = useState(false);
+  const displayedEquipments = paginateItems(equipments, page);
+
   const handlePrintPdf = () => {
-    window.print();
+    setPrintingAll(true);
+    window.setTimeout(() => {
+      window.print();
+      setPrintingAll(false);
+    }, 100);
   };
 
   return (
@@ -19,7 +30,7 @@ export default function AdminQrCodesPage({ equipments }) {
 
       <div className="admin-card">
         <div className="qr-grid">
-          {equipments.map((eq) => (
+          {(printingAll ? equipments : displayedEquipments).map((eq) => (
             <div key={eq.code} className="qr-sticker-card">
               <QRCodeSVG
                 value={eq.code}
@@ -36,6 +47,13 @@ export default function AdminQrCodesPage({ equipments }) {
           ))}
         </div>
       </div>
+      {!printingAll && (
+        <Pagination
+          totalItems={equipments.length}
+          page={page}
+          onPageChange={setPage}
+        />
+      )}
     </AdminLayout>
   );
 }

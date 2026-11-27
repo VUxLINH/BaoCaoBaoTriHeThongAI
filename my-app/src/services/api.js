@@ -56,6 +56,13 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(equipment),
     }),
+  updateEquipmentDetails: (code, details) =>
+    request(`/equipments/${encodeURIComponent(code)}/details`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(details),
+    }),
+  getTechnicians: () => request('/auth/technicians'),
 
   // Reports & AI Triage
   getReports: () => request('/reports'),
@@ -71,20 +78,40 @@ export const api = {
       body: formData,
     });
   },
-  createReport: (report) =>
-    request('/reports', {
+  createReport: (payload) => {
+    const { image, ...report } = payload;
+    const formData = new FormData();
+    formData.append(
+      'report',
+      new Blob([JSON.stringify(report)], { type: 'application/json' })
+    );
+    if (image) {
+      formData.append('image', image);
+    }
+    return request('/reports', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(report),
-    }),
+      body: formData,
+    });
+  },
   acceptReport: (id) =>
     request(`/reports/${id}/accept`, { method: 'PUT' }),
-  completeReport: (id, payload) =>
-    request(`/reports/${id}/complete`, {
+  completeReport: (id, payload) => {
+    const { image, ...completion } = payload;
+    const formData = new FormData();
+    formData.append(
+      'completion',
+      new Blob([JSON.stringify(completion)], { type: 'application/json' })
+    );
+    if (image) {
+      formData.append('image', image);
+    }
+    return request(`/reports/${id}/complete`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }),
+      body: formData,
+    });
+  },
+  getReportImageUrl: (id, imageType) =>
+    `${API_BASE_URL}/reports/${id}/images/${imageType}`,
 
   // Chatbot AI Kỹ thuật
   askTechAi: (equipmentName, question) =>
@@ -110,4 +137,33 @@ export const api = {
     }),
   toggleShiftOnline: (id) =>
     request(`/shifts/${id}/toggle`, { method: 'PUT' }),
+
+  // Preventive maintenance
+  getMaintenanceTasks: () => request('/maintenance-tasks'),
+  getPartUsages: (year, month) =>
+    request(`/part-usages?year=${encodeURIComponent(year)}&month=${encodeURIComponent(month)}`),
+  getMaintenanceTaskImageUrl: (id) => `${API_BASE_URL}/maintenance-tasks/${id}/image`,
+  createMaintenanceTask: (task) =>
+    request('/maintenance-tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(task),
+    }),
+  startMaintenanceTask: (id) =>
+    request(`/maintenance-tasks/${id}/start`, { method: 'PUT' }),
+  acknowledgeMaintenanceTask: (id) =>
+    request(`/maintenance-tasks/${id}/acknowledge`, { method: 'PUT' }),
+  completeMaintenanceTask: (id, payload) => {
+    const formData = new FormData();
+    formData.append('resultNotes', payload.resultNotes);
+    formData.append('replacedParts', payload.replacedParts || '');
+    formData.append('parts', JSON.stringify(payload.parts || []));
+    if (payload.image) {
+      formData.append('image', payload.image);
+    }
+    return request(`/maintenance-tasks/${id}/complete`, {
+      method: 'PUT',
+      body: formData,
+    });
+  },
 };

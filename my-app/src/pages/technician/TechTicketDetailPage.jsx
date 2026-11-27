@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Bot, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import MobileAppLayout from '../../layouts/MobileAppLayout';
+import PartUsageFields from '../../components/PartUsageFields';
+import { api } from '../../services/api';
 
 const normalizeEquipmentStatus = (status) => {
   if (status === 'ACTIVE') return 'Đang hoạt động';
@@ -26,14 +28,22 @@ export default function TechTicketDetailPage({
 
   const [todayStr] = useState(() => new Date().toLocaleDateString('vi-VN'));
   const [rootCauseNote, setRootCauseNote] = useState(ticket?.rootCauseNote || '');
-  const [replacedParts, setReplacedParts] = useState(ticket?.replacedParts || '');
+  const [parts, setParts] = useState([]);
+  const [imageAfterFile, setImageAfterFile] = useState(null);
   const [imageAfterPreview, setImageAfterPreview] = useState(null);
+  const imageAfterPreviewUrl = useRef(null);
   const [equipmentStatus, setEquipmentStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
   const [statusError, setStatusError] = useState('');
   const [savingStatus, setSavingStatus] = useState(false);
   const [completionError, setCompletionError] = useState('');
   const [completing, setCompleting] = useState(false);
+
+  useEffect(() => () => {
+    if (imageAfterPreviewUrl.current) {
+      URL.revokeObjectURL(imageAfterPreviewUrl.current);
+    }
+  }, []);
 
   if (!ticket) {
     return (
@@ -53,9 +63,25 @@ export default function TechTicketDetailPage({
 
   const handleImageAfterChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageAfterPreview(URL.createObjectURL(file));
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setCompletionError('Ảnh nghiệm thu không được vượt quá 10 MB.');
+      e.target.value = '';
+      return;
     }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setCompletionError('Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.');
+      e.target.value = '';
+      return;
+    }
+    if (imageAfterPreviewUrl.current) {
+      URL.revokeObjectURL(imageAfterPreviewUrl.current);
+    }
+    const previewUrl = URL.createObjectURL(file);
+    imageAfterPreviewUrl.current = previewUrl;
+    setImageAfterFile(file);
+    setImageAfterPreview(previewUrl);
+    setCompletionError('');
   };
 
   const handleUpdateEquipmentStatus = async (e) => {
@@ -86,9 +112,19 @@ export default function TechTicketDetailPage({
     try {
       await onCompleteTicket(ticket.id, {
         rootCauseNote,
-        replacedParts,
-        completedDate: todayStr,
+        replacedParts: parts
+          .filter((part) => part.partName.trim())
+          .map((part) => `${part.partName.trim()} × ${part.quantity} ${part.unit}`)
+          .join('; '),
+        parts: parts
+          .filter((part) => part.partName.trim())
+          .map((part) => ({
+            ...part,
+            quantity: Number(part.quantity),
+            unitCost: Number(part.unitCost),
+          })),
         equipmentStatus: equipmentStatus ?? normalizeEquipmentStatus(equipment?.status),
+        image: imageAfterFile,
       });
       navigate('/tech');
     } catch (error) {
@@ -173,12 +209,32 @@ export default function TechTicketDetailPage({
         <div className="form-group">
           <label>Ảnh hiện trường từ người báo:</label>
           <div className="photo-evidence-box">
-            {ticket.imageBeforeUrl ? (
-              <img src={ticket.imageBeforeUrl} alt="Hiện trường lỗi" />
+            {ticket.hasImageBefore ? (
+              <img
+                src={api.getReportImageUrl(ticket.id, 'before')}
+                alt="Ảnh hiện trường do người báo gửi"
+              />
             ) : (
               <>
                 <ImageIcon size={24} />
                 <span>[ {ticket.imagePlaceholderText || 'Ảnh hiện trường thiết bị'} ]</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Ảnh hiện trường sau sửa của KTV:</label>
+          <div className="photo-evidence-box">
+            {ticket.hasImageAfter ? (
+              <img
+                src={api.getReportImageUrl(ticket.id, 'after')}
+                alt="Ảnh nghiệm thu do KTV gửi"
+              />
+            ) : (
+              <>
+                <ImageIcon size={24} />
+                <span>{isCompleted ? 'Không có ảnh nghiệm thu' : 'Chưa chọn ảnh nghiệm thu'}</span>
               </>
             )}
           </div>
@@ -199,22 +255,19 @@ export default function TechTicketDetailPage({
           </div>
 
           <div className="form-group">
-            <label>Linh kiện thay thế (Nếu có)</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="VD: Tụ điện 35uF"
-              value={replacedParts}
-              onChange={(e) => setReplacedParts(e.target.value)}
-              disabled={isCompleted}
-            />
+            <label>Linh kiện đã sử dụng (nếu có)</label>
+            {!isCompleted ? (
+              <PartUsageFields parts={parts} onChange={setParts} />
+            ) : (
+              <p>{ticket.replacedParts || 'Không ghi nhận linh kiện.'}</p>
+            )}
           </div>
 
           {!isCompleted && (
             <label className="upload-box">
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleImageAfterChange}
                 style={{ display: 'none' }}
               />

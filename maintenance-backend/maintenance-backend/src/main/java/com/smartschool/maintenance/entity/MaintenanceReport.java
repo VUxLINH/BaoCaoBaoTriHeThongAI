@@ -29,8 +29,13 @@ public class MaintenanceReport {
     @Column(columnDefinition = "TEXT")
     private String rootCauseNote;
 
+    @Column(columnDefinition = "TEXT")
     private String replacedParts;
     private String completedDate;
+    @Column(name = "has_image_before", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE")
+    private boolean hasImageBefore;
+    @Column(name = "has_image_after", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE")
+    private boolean hasImageAfter;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -76,4 +81,10 @@ public class MaintenanceReport {
 
     public String getCompletedDate() { return completedDate; }
     public void setCompletedDate(String completedDate) { this.completedDate = completedDate; }
+
+    public boolean isHasImageBefore() { return hasImageBefore; }
+    public void setHasImageBefore(boolean hasImageBefore) { this.hasImageBefore = hasImageBefore; }
+
+    public boolean isHasImageAfter() { return hasImageAfter; }
+    public void setHasImageAfter(boolean hasImageAfter) { this.hasImageAfter = hasImageAfter; }
 }

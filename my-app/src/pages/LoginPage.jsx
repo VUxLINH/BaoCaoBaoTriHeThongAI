@@ -43,8 +43,8 @@ export default function LoginPage() {
   return (
     <MobileAppLayout>
       <header className="header-section">
-        <div className="logo-circle">
-          <span>AI</span>
+        <div className="logo-square">
+          <img src="/logodtu.png" alt="Logo hệ thống" />
         </div>
         <h1 className="app-title">Bảo trì Thiết bị Trường học</h1>
         <p className="app-subtitle">Hệ thống quản lý &amp; hỗ trợ thông minh</p>

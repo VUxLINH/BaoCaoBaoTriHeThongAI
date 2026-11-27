@@ -31,6 +31,15 @@ public class Equipment {
     private String lastMaintenanceDate;
     private String lastRepairDate;
     private String status;
+    private String manufacturer;
+    private String model;
+    private String serialNumber;
+    private String responsibleUnit;
+    private String responsiblePerson;
+    private java.time.LocalDate warrantyExpiryDate;
+    private Integer maintenanceIntervalMonths;
+    @Column(columnDefinition = "TEXT")
+    private String safetyNotes;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -64,4 +73,32 @@ public class Equipment {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getManufacturer() { return manufacturer; }
+    public void setManufacturer(String manufacturer) { this.manufacturer = manufacturer; }
+
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
+
+    public String getSerialNumber() { return serialNumber; }
+    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+    public String getResponsibleUnit() { return responsibleUnit; }
+    public void setResponsibleUnit(String responsibleUnit) { this.responsibleUnit = responsibleUnit; }
+
+    public String getResponsiblePerson() { return responsiblePerson; }
+    public void setResponsiblePerson(String responsiblePerson) { this.responsiblePerson = responsiblePerson; }
+
+    public java.time.LocalDate getWarrantyExpiryDate() { return warrantyExpiryDate; }
+    public void setWarrantyExpiryDate(java.time.LocalDate warrantyExpiryDate) {
+        this.warrantyExpiryDate = warrantyExpiryDate;
+    }
+
+    public Integer getMaintenanceIntervalMonths() { return maintenanceIntervalMonths; }
+    public void setMaintenanceIntervalMonths(Integer maintenanceIntervalMonths) {
+        this.maintenanceIntervalMonths = maintenanceIntervalMonths;
+    }
+
+    public String getSafetyNotes() { return safetyNotes; }
+    public void setSafetyNotes(String safetyNotes) { this.safetyNotes = safetyNotes; }
 }

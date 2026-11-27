@@ -1,21 +1,35 @@
 package com.smartschool.maintenance.controller;
 
 import com.smartschool.maintenance.entity.User;
+import com.smartschool.maintenance.repository.UserRepository;
 import com.smartschool.maintenance.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.List;
+import com.smartschool.maintenance.dto.TechnicianOption;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, UserRepository userRepository) {
         this.authService = authService;
+        this.userRepository = userRepository;
+    }
+
+    @GetMapping("/technicians")
+    public List<TechnicianOption> getTechnicians() {
+        return java.util.stream.Stream.concat(
+                        userRepository.findAllByRoleIgnoreCase("TECHNICIAN").stream(),
+                        userRepository.findAllByRoleIgnoreCase("TECH").stream())
+                .map(user -> new TechnicianOption(user.getId(), user.getFullName()))
+                .toList();
     }
 
     @PostMapping("/login")

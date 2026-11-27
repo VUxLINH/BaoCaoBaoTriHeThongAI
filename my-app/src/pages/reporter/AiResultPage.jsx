@@ -9,6 +9,7 @@ export default function AiResultPage({ onSaveReport }) {
   const { state } = useLocation();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   if (!state?.equipment || !state?.aiResult) {
     return (
@@ -33,13 +34,27 @@ export default function AiResultPage({ onSaveReport }) {
     );
   }
 
-  const { equipment, roomName, description, aiResult } = state;
+  const { equipment, roomName, description, imageFile, imagePreview, aiResult } = state;
   const isComplex = aiResult.severity === 'COMPLEX';
   const steps = Array.isArray(aiResult.steps) ? aiResult.steps : [];
 
-  const handleSelfFixed = async () => {
+  const saveReport = async (report) => {
     setSaving(true);
-    await onSaveReport({
+    setSaveError('');
+    try {
+      await onSaveReport({
+        ...report,
+        image: imageFile || null,
+      });
+      navigate('/report');
+    } catch (error) {
+      setSaveError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSelfFixed = () => saveReport({
       equipmentCode: equipment.code,
       equipmentName: equipment.name,
       roomBadge: roomName || equipment.roomCode,
@@ -49,13 +64,8 @@ export default function AiResultPage({ onSaveReport }) {
       resolvedByAi: true,
       status: 'COMPLETED',
     });
-    setSaving(false);
-    navigate('/report');
-  };
 
-  const handleEscalateToTech = async () => {
-    setSaving(true);
-    await onSaveReport({
+  const handleEscalateToTech = () => saveReport({
       equipmentCode: equipment.code,
       equipmentName: equipment.name,
       roomBadge: roomName || equipment.roomCode,
@@ -65,9 +75,6 @@ export default function AiResultPage({ onSaveReport }) {
       resolvedByAi: false,
       status: 'WAITING_TECH',
     });
-    setSaving(false);
-    navigate('/report');
-  };
 
   return (
     <MobileAppLayout>
@@ -95,6 +102,13 @@ export default function AiResultPage({ onSaveReport }) {
           {aiResult.warning && <p className="ai-banner-meta">{aiResult.warning}</p>}
         </div>
 
+        {imagePreview && (
+          <div className="form-group">
+            <label>Ảnh hiện trường sẽ gửi kèm báo cáo:</label>
+            <img src={imagePreview} alt="Ảnh hiện trường đã chọn" className="preview-img" />
+          </div>
+        )}
+
         <h3 className="section-heading">
           {isComplex ? 'Khuyến nghị an toàn khẩn cấp:' : 'Hướng dẫn sửa nhanh (2 phút):'}
         </h3>
@@ -121,6 +135,8 @@ export default function AiResultPage({ onSaveReport }) {
             <p className="escalate-note">Thử các bước trên nhưng vẫn không khắc phục được?</p>
           </>
         )}
+
+        {saveError && <p className="auth-error-box" role="alert">{saveError}</p>}
 
         <button
           type="button"

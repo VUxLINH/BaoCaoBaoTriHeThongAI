@@ -27,6 +27,14 @@ CREATE TABLE IF NOT EXISTS equipments (
     installed_date VARCHAR(255),
     last_maintenance_date VARCHAR(255),
     last_repair_date VARCHAR(255),
+    manufacturer VARCHAR(255),
+    model VARCHAR(255),
+    serial_number VARCHAR(255),
+    responsible_unit VARCHAR(255),
+    responsible_person VARCHAR(255),
+    warranty_expiry_date DATE,
+    maintenance_interval_months INT,
+    safety_notes TEXT,
     status VARCHAR(255),
     PRIMARY KEY (id),
     UNIQUE KEY uk_equipments_code (code)
@@ -46,9 +54,24 @@ CREATE TABLE IF NOT EXISTS maintenance_reports (
     assigned_tech_name VARCHAR(255),
     accepted_at VARCHAR(255),
     root_cause_note TEXT,
-    replaced_parts VARCHAR(255),
+    replaced_parts TEXT,
     completed_date VARCHAR(255),
+    has_image_before BOOLEAN NOT NULL DEFAULT FALSE,
+    has_image_after BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS maintenance_report_images (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    report_id BIGINT NOT NULL,
+    image_type VARCHAR(16) NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    image_data MEDIUMBLOB NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_maintenance_report_image (report_id, image_type),
+    CONSTRAINT fk_maintenance_report_images_report
+        FOREIGN KEY (report_id) REFERENCES maintenance_reports (id)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS shift_schedules (
@@ -58,4 +81,56 @@ CREATE TABLE IF NOT EXISTS shift_schedules (
     area VARCHAR(255),
     is_online BOOLEAN,
     PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS maintenance_tasks (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    equipment_id BIGINT NOT NULL,
+    technician_id BIGINT NOT NULL,
+    scheduled_date DATE NOT NULL,
+    scheduled_time TIME,
+    duration_minutes INT,
+    status VARCHAR(32) NOT NULL,
+    notes TEXT,
+    result_notes TEXT,
+    replaced_parts TEXT,
+    completed_at DATETIME,
+    has_evidence_image BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (id),
+    KEY idx_maintenance_tasks_scheduled_date (scheduled_date),
+    KEY idx_maintenance_tasks_status (status),
+    CONSTRAINT fk_maintenance_tasks_equipment
+        FOREIGN KEY (equipment_id) REFERENCES equipments (id),
+    CONSTRAINT fk_maintenance_tasks_technician
+        FOREIGN KEY (technician_id) REFERENCES users (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS maintenance_part_usages (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    report_id BIGINT,
+    maintenance_task_id BIGINT,
+    part_name VARCHAR(255) NOT NULL,
+    part_code VARCHAR(100),
+    quantity DECIMAL(12, 3) NOT NULL,
+    unit VARCHAR(40) NOT NULL,
+    unit_cost DECIMAL(14, 2) NOT NULL,
+    supplier VARCHAR(255),
+    document_number VARCHAR(100),
+    PRIMARY KEY (id),
+    KEY idx_part_usages_report (report_id),
+    KEY idx_part_usages_task (maintenance_task_id),
+    CONSTRAINT fk_part_usages_report
+        FOREIGN KEY (report_id) REFERENCES maintenance_reports (id),
+    CONSTRAINT fk_part_usages_task
+        FOREIGN KEY (maintenance_task_id) REFERENCES maintenance_tasks (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS maintenance_task_images (
+    task_id BIGINT NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    image_data MEDIUMBLOB NOT NULL,
+    PRIMARY KEY (task_id),
+    CONSTRAINT fk_maintenance_task_images_task
+        FOREIGN KEY (task_id) REFERENCES maintenance_tasks (id)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;

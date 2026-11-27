@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart3,
+  CalendarDays,
   CalendarClock,
   LayoutDashboard,
   LogOut,
@@ -26,7 +27,9 @@ export default function AdminLayout({ children }) {
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <div className="admin-brand">SmartSchool AI</div>
+        <div className="admin-brand">
+          <img className="admin-brand-logo" src="/logodtu.png" alt="Logo" />
+        </div>
 
         <nav className="admin-nav">
           <NavLink
@@ -68,6 +71,16 @@ export default function AdminLayout({ children }) {
           >
             <CalendarClock size={17} />
             <span>Lịch trực KTV</span>
+          </NavLink>
+
+          <NavLink
+            to="/admin/maintenance"
+            className={({ isActive }) =>
+              `admin-nav-link ${isActive ? 'active' : ''}`
+            }
+          >
+            <CalendarDays size={17} />
+            <span>Lịch bảo trì</span>
           </NavLink>
 
           <NavLink

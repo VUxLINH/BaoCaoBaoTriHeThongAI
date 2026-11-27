@@ -7,7 +7,8 @@ import MobileAppLayout from '../../layouts/MobileAppLayout';
 export default function TechAiAssistantPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const equipmentName = state?.equipmentName || 'Điều hòa Daikin Inverter 2HP';
+  const equipmentName = state?.equipmentName || 'thiết bị trường học';
+  const isGeneralQuestion = !state?.equipmentName;
 
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -72,7 +73,11 @@ export default function TechAiAssistantPage() {
 
       <div className="ai-chat-shell">
         <div className="ai-context-bar">
-          <div className="ai-context-pill">Ngữ cảnh: {equipmentName}</div>
+          <div className="ai-context-pill">
+            {isGeneralQuestion
+              ? 'Chế độ: Hỏi đáp kỹ thuật chung'
+              : `Ngữ cảnh: ${equipmentName}`}
+          </div>
         </div>
 
         <div className="chat-messages-area">
@@ -113,29 +118,54 @@ export default function TechAiAssistantPage() {
 
         <div className="chat-footer">
           <div className="quick-prompts-row">
-            <button
-              type="button"
-              className="prompt-chip"
-              disabled={isSending}
-              onClick={() => sendMessage('Lịch sử lỗi máy này?')}
-            >
-              Lịch sử lỗi máy này?
-            </button>
-            <button
-              type="button"
-              className="prompt-chip"
-              disabled={isSending}
-              onClick={() => sendMessage('Thông số tụ khởi động')}
-            >
-              Thông số tụ khởi động
-            </button>
+            {isGeneralQuestion ? (
+              <>
+                <button
+                  type="button"
+                  className="prompt-chip"
+                  disabled={isSending}
+                  onClick={() => sendMessage('Quy trình kiểm tra an toàn điện trước khi sửa chữa là gì?')}
+                >
+                  Kiểm tra an toàn điện
+                </button>
+                <button
+                  type="button"
+                  className="prompt-chip"
+                  disabled={isSending}
+                  onClick={() => sendMessage('Checklist bảo trì định kỳ thiết bị trường học gồm những gì?')}
+                >
+                  Checklist bảo trì định kỳ
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="prompt-chip"
+                  disabled={isSending}
+                  onClick={() => sendMessage('Lịch sử lỗi máy này?')}
+                >
+                  Lịch sử lỗi máy này?
+                </button>
+                <button
+                  type="button"
+                  className="prompt-chip"
+                  disabled={isSending}
+                  onClick={() => sendMessage('Thông số tụ khởi động')}
+                >
+                  Thông số tụ khởi động
+                </button>
+              </>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="chat-input-row">
             <input
               type="text"
               className="form-input"
-              placeholder="Hỏi AI về kỹ thuật sửa chữa..."
+              placeholder={isGeneralQuestion
+                ? 'Hỏi về quy trình, an toàn hoặc bảo trì thiết bị...'
+                : 'Hỏi AI về kỹ thuật sửa chữa thiết bị này...'}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isSending}

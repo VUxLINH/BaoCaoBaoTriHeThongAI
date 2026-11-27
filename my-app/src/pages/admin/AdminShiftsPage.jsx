@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import AdminLayout from '../../layouts/AdminLayout';
+import Pagination from '../../components/Pagination';
+import { paginateItems } from '../../utils/pagination';
 import { api } from '../../services/api';
 
 export default function AdminShiftsPage() {
   const [shifts, setShifts] = useState([]);
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [shiftName, setShiftName] = useState('Ca Tối (18:00 - 21:00)');
   const [techName, setTechName] = useState('');
   const [area, setArea] = useState('Giảng đường A & B');
   const [error, setError] = useState('');
+  const displayedShifts = paginateItems(shifts, page);
 
   useEffect(() => {
     let active = true;
@@ -55,6 +59,7 @@ export default function AdminShiftsPage() {
         isOnline: false,
       });
       setShifts((prev) => [...prev, created]);
+      setPage(1);
       setTechName('');
       setShowModal(false);
     } catch (saveError) {
@@ -80,7 +85,7 @@ export default function AdminShiftsPage() {
         <h3 className="admin-card-title">Ca trực và trạng thái KTV</h3>
         <p className="shift-sync-note">Trạng thái được đồng bộ tự động mỗi 5 giây.</p>
         <div className="shift-grid">
-          {shifts.map((shift) => (
+          {displayedShifts.map((shift) => (
             <div
               key={shift.id}
               className={`shift-card ${shift.isOnline ? 'online' : ''}`}
@@ -99,6 +104,8 @@ export default function AdminShiftsPage() {
             </div>
           ))}
         </div>
+        {!shifts.length && <p>Chưa có ca trực nào được phân công.</p>}
+        <Pagination totalItems={shifts.length} page={page} onPageChange={setPage} />
       </div>
 
       {showModal && (

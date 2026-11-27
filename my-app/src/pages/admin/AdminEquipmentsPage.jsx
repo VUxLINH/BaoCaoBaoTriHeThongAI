@@ -1,7 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import AdminLayout from '../../layouts/AdminLayout';
+import Pagination from '../../components/Pagination';
+import { paginateItems } from '../../utils/pagination';
 import { api } from '../../services/api';
+
+const EMPTY_EQUIPMENT_DETAILS = {
+  manufacturer: '',
+  model: '',
+  serialNumber: '',
+  responsibleUnit: '',
+  responsiblePerson: '',
+  warrantyExpiryDate: '',
+  maintenanceIntervalMonths: '',
+  safetyNotes: '',
+};
 
 function getStatusLabel(status) {
   return {
@@ -12,9 +25,16 @@ function getStatusLabel(status) {
   }[status] || status;
 }
 
-export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
+export default function AdminEquipmentsPage({
+  equipments,
+  onAddEquipment,
+  onUpdateEquipmentDetails,
+}) {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [detailsForm, setDetailsForm] = useState(EMPTY_EQUIPMENT_DETAILS);
   const [equipmentRows, setEquipmentRows] = useState(equipments);
   const [refreshError, setRefreshError] = useState('');
 
@@ -22,6 +42,7 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState('Máy chiếu');
   const [newRoomCode, setNewRoomCode] = useState('P.302');
+  const [newDetails, setNewDetails] = useState(EMPTY_EQUIPMENT_DETAILS);
 
   useEffect(() => {
     let active = true;
@@ -53,6 +74,7 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
       eq.roomCode.toLowerCase().includes(q)
     );
   });
+  const displayedEquipments = paginateItems(filtered, page);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -69,18 +91,109 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
         roomFullName: `Phòng ${newRoomCode.replace('P.', '')}`,
         area: 'Giảng đường A & B',
         installedDate: today,
-        lastMaintenanceDate: today,
+        lastMaintenanceDate: '',
         lastRepairDate: 'Chưa có',
         status: 'Đang hoạt động',
+        ...newDetails,
+        warrantyExpiryDate: newDetails.warrantyExpiryDate || null,
+        maintenanceIntervalMonths: newDetails.maintenanceIntervalMonths
+          ? Number(newDetails.maintenanceIntervalMonths)
+          : null,
       });
       setEquipmentRows((previous) => [saved, ...previous]);
+      setPage(1);
       setNewCode('');
       setNewName('');
+      setNewDetails(EMPTY_EQUIPMENT_DETAILS);
       setShowModal(false);
     } catch (error) {
       setRefreshError(error.message);
     }
   };
+
+  const openEquipmentDetails = (equipment) => {
+    setSelectedEquipment(equipment);
+    setDetailsForm({
+      manufacturer: equipment.manufacturer || '',
+      model: equipment.model || '',
+      serialNumber: equipment.serialNumber || '',
+      responsibleUnit: equipment.responsibleUnit || '',
+      responsiblePerson: equipment.responsiblePerson || '',
+      warrantyExpiryDate: equipment.warrantyExpiryDate || '',
+      maintenanceIntervalMonths: equipment.maintenanceIntervalMonths || '',
+      safetyNotes: equipment.safetyNotes || '',
+    });
+  };
+
+  const handleSaveDetails = async (e) => {
+    e.preventDefault();
+    try {
+      const updated = await onUpdateEquipmentDetails(selectedEquipment.code, {
+        ...detailsForm,
+        warrantyExpiryDate: detailsForm.warrantyExpiryDate || null,
+        maintenanceIntervalMonths: detailsForm.maintenanceIntervalMonths
+          ? Number(detailsForm.maintenanceIntervalMonths)
+          : null,
+      });
+      setEquipmentRows((previous) =>
+        previous.map((item) => item.code === updated.code ? updated : item)
+      );
+      setSelectedEquipment(null);
+      setRefreshError('');
+    } catch (error) {
+      setRefreshError(error.message);
+    }
+  };
+
+  const updateDetailsField = (setter, field, value) => {
+    setter((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const renderDetailsFields = (values, setter) => (
+    <>
+      <div className="form-group">
+        <label>Hãng sản xuất</label>
+        <input className="form-input" value={values.manufacturer}
+          onChange={(e) => updateDetailsField(setter, 'manufacturer', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Model</label>
+        <input className="form-input" value={values.model}
+          onChange={(e) => updateDetailsField(setter, 'model', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Số serial (nếu có)</label>
+        <input className="form-input" value={values.serialNumber}
+          onChange={(e) => updateDetailsField(setter, 'serialNumber', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Đơn vị phụ trách</label>
+        <input className="form-input" value={values.responsibleUnit}
+          onChange={(e) => updateDetailsField(setter, 'responsibleUnit', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Người phụ trách</label>
+        <input className="form-input" value={values.responsiblePerson}
+          onChange={(e) => updateDetailsField(setter, 'responsiblePerson', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Ngày hết bảo hành</label>
+        <input type="date" className="form-input" value={values.warrantyExpiryDate}
+          onChange={(e) => updateDetailsField(setter, 'warrantyExpiryDate', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Chu kỳ bảo trì (tháng)</label>
+        <input type="number" min="1" className="form-input"
+          value={values.maintenanceIntervalMonths}
+          onChange={(e) => updateDetailsField(setter, 'maintenanceIntervalMonths', e.target.value)} />
+      </div>
+      <div className="form-group">
+        <label>Ghi chú an toàn/kỹ thuật</label>
+        <textarea className="form-textarea" value={values.safetyNotes}
+          onChange={(e) => updateDetailsField(setter, 'safetyNotes', e.target.value)} />
+      </div>
+    </>
+  );
 
   return (
     <AdminLayout>
@@ -97,7 +210,10 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
             className="search-input"
             placeholder="Tìm theo mã máy, phòng, tên..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
           <button className="admin-btn-blue" onClick={() => setShowModal(true)}>
             <Plus size={16} />
@@ -114,10 +230,11 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
               <th>LẮP ĐẶT</th>
               <th>BẢO TRÌ GẦN NHẤT</th>
               <th>TRẠNG THÁI</th>
+              <th>THÔNG TIN</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((eq) => {
+            {displayedEquipments.map((eq) => {
               const status = getStatusLabel(eq.status);
               return (
                 <tr key={eq.code}>
@@ -139,11 +256,26 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
                       {status}
                     </span>
                   </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => openEquipmentDetails(eq)}
+                    >
+                      Chi tiết
+                    </button>
+                  </td>
                 </tr>
               );
             })}
+            {!filtered.length && (
+              <tr>
+                <td colSpan="7">Không tìm thấy thiết bị phù hợp.</td>
+              </tr>
+            )}
           </tbody>
         </table>
+        <Pagination totalItems={filtered.length} page={page} onPageChange={setPage} />
       </div>
 
       {/* Modal thêm thiết bị mới */}
@@ -199,6 +331,7 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
                   required
                 />
               </div>
+              {renderDetailsFields(newDetails, setNewDetails)}
               <div className="modal-actions">
                 <button
                   type="button"
@@ -209,6 +342,34 @@ export default function AdminEquipmentsPage({ equipments, onAddEquipment }) {
                 </button>
                 <button type="submit" className="admin-btn-blue">
                   Lưu thiết bị
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {selectedEquipment && (
+        <div className="modal-backdrop">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3>Chi tiết thiết bị · {selectedEquipment.code}</h3>
+              <button type="button" className="back-btn"
+                onClick={() => setSelectedEquipment(null)}>
+                <X size={18} />
+              </button>
+            </div>
+            <p className="shift-sync-note">
+              {selectedEquipment.name} · {selectedEquipment.roomFullName || selectedEquipment.roomCode}
+            </p>
+            <form onSubmit={handleSaveDetails} className="form-stack">
+              {renderDetailsFields(detailsForm, setDetailsForm)}
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel"
+                  onClick={() => setSelectedEquipment(null)}>
+                  Hủy
+                </button>
+                <button type="submit" className="admin-btn-blue">
+                  Lưu thông tin
                 </button>
               </div>
             </form>
