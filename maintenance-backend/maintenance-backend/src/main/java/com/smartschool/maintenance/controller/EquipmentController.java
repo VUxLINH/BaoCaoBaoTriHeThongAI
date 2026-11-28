@@ -1,10 +1,16 @@
 package com.smartschool.maintenance.controller;
 
 import com.smartschool.maintenance.entity.Equipment;
+import com.smartschool.maintenance.entity.EquipmentImage;
 import com.smartschool.maintenance.service.EquipmentService;
+import com.smartschool.maintenance.service.EquipmentImageService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +19,13 @@ import java.util.Map;
 public class EquipmentController {
 
     private final EquipmentService equipmentService;
+    private final EquipmentImageService equipmentImageService;
 
-    public EquipmentController(EquipmentService equipmentService) {
+    public EquipmentController(
+            EquipmentService equipmentService,
+            EquipmentImageService equipmentImageService) {
         this.equipmentService = equipmentService;
+        this.equipmentImageService = equipmentImageService;
     }
 
     @GetMapping
@@ -32,8 +42,43 @@ public class EquipmentController {
     }
 
     @PostMapping
-    public Equipment create(@RequestBody Equipment equipment) {
-        return equipmentService.create(equipment);
+    public ResponseEntity<?> create(@RequestBody Equipment equipment) {
+        try {
+            return ResponseEntity.ok(equipmentService.create(equipment));
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.badRequest().body(Map.of("message", error.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/{code}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImage(
+            @PathVariable String code,
+            @RequestParam("image") MultipartFile image) {
+        try {
+            equipmentImageService.save(code, image);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.badRequest().body(Map.of("message", error.getMessage()));
+        } catch (IOException error) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Không thể đọc ảnh thiết bị."));
+        }
+    }
+
+    @GetMapping("/{code}/image")
+    public ResponseEntity<byte[]> getImage(@PathVariable String code) {
+        return equipmentImageService.findByEquipmentCode(code)
+                .map(this::imageResponse)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{code}")
+    public ResponseEntity<?> delete(@PathVariable String code) {
+        if (equipmentService.deleteByCode(code)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(404)
+                .body(Map.of("message", "Không tìm thấy thiết bị có mã: " + code));
     }
 
     @PutMapping("/{code}/details")
@@ -44,6 +89,7 @@ public class EquipmentController {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Thiếu thông tin chi tiết thiết bị."));
         }
+
         try {
             return equipmentService.updateDetails(code, details)
                     .<ResponseEntity<?>>map(ResponseEntity::ok)
@@ -70,5 +116,13 @@ public class EquipmentController {
                 })
                 .orElseGet(() -> ResponseEntity.status(404)
                         .body(Map.of("message", "Không tìm thấy thiết bị có mã: " + code)));
+    }
+
+    private ResponseEntity<byte[]> imageResponse(EquipmentImage image) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .contentType(MediaType.parseMediaType(image.getContentType()))
+                .body(image.getImageData());
     }
 }

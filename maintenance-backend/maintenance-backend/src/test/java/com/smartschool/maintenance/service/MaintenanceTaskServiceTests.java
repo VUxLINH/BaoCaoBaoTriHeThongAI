@@ -27,6 +27,32 @@ import static org.mockito.Mockito.when;
 class MaintenanceTaskServiceTests {
 
     @Test
+    void findAllReturnsEquipmentSnapshotWhenEquipmentWasDeleted() {
+        MaintenanceTaskRepository taskRepository = mock(MaintenanceTaskRepository.class);
+        MaintenanceTask task = new MaintenanceTask();
+        task.setEquipmentCode("TB-01");
+        task.setEquipmentName("Máy chiếu");
+        task.setEquipmentRoomName("P.302");
+        User technician = new User();
+        technician.setId(7L);
+        technician.setFullName("KTV");
+        task.setTechnician(technician);
+        when(taskRepository.findAllByOrderByScheduledDateAscIdAsc()).thenReturn(List.of(task));
+        MaintenanceTaskService service = new MaintenanceTaskService(
+                taskRepository,
+                mock(MaintenanceTaskImageRepository.class),
+                mock(EquipmentRepository.class),
+                mock(UserRepository.class),
+                mock(MaintenancePartUsageService.class));
+
+        var response = service.findAll().get(0);
+
+        assertEquals("TB-01", response.equipmentCode());
+        assertEquals("Máy chiếu", response.equipmentName());
+        assertEquals("P.302", response.roomName());
+    }
+
+    @Test
     void acknowledgeMovesScheduledTaskToAcknowledged() {
         MaintenanceTaskRepository taskRepository = mock(MaintenanceTaskRepository.class);
         MaintenanceTask task = new MaintenanceTask();

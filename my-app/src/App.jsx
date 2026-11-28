@@ -65,6 +65,12 @@ export default function App() {
   const handleAddEquipment = async (newEquip) => {
     const saved = await api.createEquipment(newEquip);
     setEquipments((prev) => [saved, ...prev]);
+    return saved;
+  };
+
+  const handleDeleteEquipment = async (code) => {
+    await api.deleteEquipment(code);
+    setEquipments((prev) => prev.filter((equipment) => equipment.code !== code));
   };
 
   const handleUpdateEquipmentDetails = async (code, details) => {
@@ -208,6 +214,7 @@ export default function App() {
                 <AdminEquipmentsPage
                   equipments={equipments}
                   onAddEquipment={handleAddEquipment}
+                  onDeleteEquipment={handleDeleteEquipment}
                   onUpdateEquipmentDetails={handleUpdateEquipmentDetails}
                 />
               </ProtectedRoute>

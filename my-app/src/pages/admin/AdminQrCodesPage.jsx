@@ -5,6 +5,9 @@ import AdminLayout from '../../layouts/AdminLayout';
 import Pagination from '../../components/Pagination';
 import { paginateItems } from '../../utils/pagination';
 
+const getEquipmentReportUrl = (code) =>
+  new URL(`/report/create/${encodeURIComponent(code)}`, window.location.origin).toString();
+
 export default function AdminQrCodesPage({ equipments }) {
   const [page, setPage] = useState(1);
   const [printingAll, setPrintingAll] = useState(false);
@@ -33,7 +36,7 @@ export default function AdminQrCodesPage({ equipments }) {
           {(printingAll ? equipments : displayedEquipments).map((eq) => (
             <div key={eq.code} className="qr-sticker-card">
               <QRCodeSVG
-                value={eq.code}
+                value={getEquipmentReportUrl(eq.code)}
                 size={130}
                 bgColor="#ffffff"
                 fgColor="#0f172a"

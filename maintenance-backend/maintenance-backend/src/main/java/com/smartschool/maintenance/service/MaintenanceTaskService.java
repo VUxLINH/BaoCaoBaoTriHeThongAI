@@ -74,6 +74,7 @@ public class MaintenanceTaskService {
 
         MaintenanceTask task = new MaintenanceTask();
         task.setEquipment(equipment);
+        setEquipmentSnapshot(task, equipment);
         task.setTechnician(technician);
         task.setScheduledDate(request.scheduledDate());
         LocalTime scheduledTime = request.scheduledTime() == null
@@ -166,8 +167,10 @@ public class MaintenanceTaskService {
                 imageRepository.save(image);
                 task.setHasEvidenceImage(true);
             }
-            task.getEquipment().setLastMaintenanceDate(today.format(LEGACY_DATE_FORMAT));
-            equipmentRepository.save(task.getEquipment());
+            if (task.getEquipment() != null) {
+                task.getEquipment().setLastMaintenanceDate(today.format(LEGACY_DATE_FORMAT));
+                equipmentRepository.save(task.getEquipment());
+            }
             return toResponse(taskRepository.save(task));
         });
     }
@@ -182,9 +185,13 @@ public class MaintenanceTaskService {
         User technician = task.getTechnician();
         return new MaintenanceTaskResponse(
                 task.getId(),
-                equipment.getCode(),
-                equipment.getName(),
-                equipment.getRoomFullName() == null ? equipment.getRoomCode() : equipment.getRoomFullName(),
+                task.getEquipmentCode() == null ? equipment.getCode() : task.getEquipmentCode(),
+                task.getEquipmentName() == null ? equipment.getName() : task.getEquipmentName(),
+                task.getEquipmentRoomName() == null
+                        ? equipment.getRoomFullName() == null
+                                ? equipment.getRoomCode()
+                                : equipment.getRoomFullName()
+                        : task.getEquipmentRoomName(),
                 technician.getId(),
                 technician.getFullName(),
                 task.getScheduledDate(),
@@ -212,8 +219,13 @@ public class MaintenanceTaskService {
                                 MaintenanceTask.ACKNOWLEDGED,
                                 MaintenanceTask.IN_PROGRESS)
                         .contains(existing.getStatus()))
-                .filter(existing -> equipment.getId().equals(existing.getEquipment().getId())
-                        || technician.getId().equals(existing.getTechnician().getId()))
+                .filter(existing -> {
+                    Equipment existingEquipment = existing.getEquipment();
+                    boolean sameEquipment = existingEquipment == null
+                            ? equipment.getCode().equalsIgnoreCase(existing.getEquipmentCode())
+                            : equipment.getId().equals(existingEquipment.getId());
+                    return sameEquipment || technician.getId().equals(existing.getTechnician().getId());
+                })
                 .anyMatch(existing -> {
                     LocalTime existingStart = existing.getScheduledTime() == null
                             ? LocalTime.of(9, 0) : existing.getScheduledTime();
@@ -229,5 +241,13 @@ public class MaintenanceTaskService {
 
     private String clean(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private void setEquipmentSnapshot(MaintenanceTask task, Equipment equipment) {
+        task.setEquipmentCode(equipment.getCode());
+        task.setEquipmentName(equipment.getName());
+        task.setEquipmentRoomName(equipment.getRoomFullName() == null
+                ? equipment.getRoomCode()
+                : equipment.getRoomFullName());
     }
 }

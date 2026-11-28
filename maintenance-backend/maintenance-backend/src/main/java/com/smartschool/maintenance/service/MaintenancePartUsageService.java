@@ -151,10 +151,15 @@ public class MaintenancePartUsageService {
                 "Bảo trì định kỳ",
                 task.getId(),
                 task.getCompletedAt().toLocalDate(),
-                task.getEquipment().getCode(),
-                task.getEquipment().getName(),
-                task.getEquipment().getRoomFullName() == null
-                        ? task.getEquipment().getRoomCode() : task.getEquipment().getRoomFullName(),
+                task.getEquipmentCode() == null
+                        ? task.getEquipment().getCode() : task.getEquipmentCode(),
+                task.getEquipmentName() == null
+                        ? task.getEquipment().getName() : task.getEquipmentName(),
+                task.getEquipmentRoomName() == null
+                        ? task.getEquipment().getRoomFullName() == null
+                                ? task.getEquipment().getRoomCode()
+                                : task.getEquipment().getRoomFullName()
+                        : task.getEquipmentRoomName(),
                 task.getNotes(),
                 task.getTechnician().getFullName(),
                 usage.getPartName(),

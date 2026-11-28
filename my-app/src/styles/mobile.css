@@ -436,6 +436,27 @@ body {
   width: 100%;
 }
 
+.technician-group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.technician-group-title {
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .maintenance-dashboard-section {
   display: flex;
   flex-direction: column;
@@ -444,10 +465,30 @@ body {
 
 .maintenance-dashboard-section .section-heading {
   margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .maintenance-dashboard-empty {
+  margin: 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8fafc;
   color: #64748b;
+  font-size: 12.5px;
+}
+
+.tech-incident-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tech-incident-subheading {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .maintenance-tech-card .maintenance-task-heading {
@@ -757,6 +798,121 @@ body {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 16px;
+}
+
+.equipment-photo-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  height: auto;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.equipment-photo-frame.loading {
+  border: 1px solid #e2e8f0;
+}
+
+.equipment-photo-loading {
+  position: absolute;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.equipment-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.equipment-photo.loaded {
+  opacity: 1;
+}
+
+.equipment-details {
+  margin-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 0;
+}
+
+.equipment-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 2px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.equipment-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.equipment-details summary::after {
+  content: '+';
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.equipment-details[open] summary::after {
+  content: '−';
+}
+
+.equipment-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.equipment-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #f1f5f9;
+  border-radius: 9px;
+  background: #f8fafc;
+  font-size: 11.5px;
+}
+
+.equipment-detail-item span,
+.equipment-details-empty,
+.equipment-report-heading p {
+  color: #64748b;
+}
+
+.equipment-detail-item strong {
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.equipment-details-empty {
+  margin: 12px 0 0;
+  font-size: 12px;
+}
+
+.equipment-report-heading h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.equipment-report-heading p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
 }
 
 .badge-row {

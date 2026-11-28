@@ -341,12 +341,12 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
         ) : !maintenanceError && (
           <>
             {maintenanceSections.map((section) => (
-              <section className="maintenance-dashboard-section" key={section.key}>
+              <section className="technician-group-card maintenance-dashboard-section" key={section.key}>
                 <h2 className="section-heading">
                   {section.title} ({section.totalItems})
                 </h2>
                 {section.key === 'today' && !section.totalItems ? (
-                  <div className="ticket-card maintenance-dashboard-empty">
+                  <div className="maintenance-dashboard-empty">
                     Hôm nay bạn chưa có lịch bảo trì.
                   </div>
                 ) : section.tasks.map((task) => {
@@ -482,121 +482,128 @@ export default function TechDashboardPage({ tickets, onAcceptTicket }) {
             ))}
           </>
         )}
-        {waitingTickets.length > 0 && (
-          <div className="tech-alert-banner">
-            <div className="tech-alert-title">
-              Sự cố chờ tiếp nhận ({waitingTickets.length})
-            </div>
-          </div>
-        )}
-
-        {/* Danh sách sự cố chờ tiếp nhận */}
-        {displayedWaitingTickets.map((ticket) => (
-          <div key={ticket.id} className="ticket-card urgent">
-            <div className="badge-row" style={{ marginBottom: 2 }}>
-              <span className="badge-red">{ticket.roomBadge}</span>
-              <span className="badge-gray">Mã: {ticket.equipmentCode}</span>
-            </div>
-
-            <h3 className="equip-name" style={{ marginBottom: 0 }}>
-              {ticket.equipmentName}
-            </h3>
-            <p className="ticket-meta">Báo lỗi: {ticket.reportedTime}</p>
-
-            <details className="tech-ticket-description">
-              <summary>
-                <span className="ticket-quote-label">Mô tả lỗi từ người báo cáo:</span>
-                <span className="tech-ticket-description-preview">{ticket.description}</span>
-                <span className="tech-ticket-description-more" aria-hidden="true" />
-              </summary>
-              <div className="ticket-quote-box">"{ticket.description}"</div>
-            </details>
-
-            <p className="ticket-meta">
-              Người báo: {ticket.reporterName} • {ticket.reportedTime}
-            </p>
-
-            <button
-              type="button"
-              className="btn-primary"
-              style={{ marginTop: '4px' }}
-              disabled={acceptingTicketId === ticket.id}
-              onClick={() => handleAcceptAndOpen(ticket)}
-            >
-              {acceptingTicketId === ticket.id ? 'Đang nhận phiếu...' : 'Nhận xử lý sự cố'}
-            </button>
-          </div>
-        ))}
-        <Pagination
-          totalItems={waitingTickets.length}
-          page={waitingPage}
-          onPageChange={setWaitingPage}
-        />
-
-        {/* Danh sách sự cố đang sửa */}
-        {inProgressTickets.length > 0 && (
-          <>
-            <h2 className="section-heading">Sự cố đang xử lý ({inProgressTickets.length})</h2>
-            {displayedInProgressTickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                className="ticket-card clickable"
-                onClick={() => navigate(`/tech/ticket/${ticket.id}`)}
-              >
-                <h3 style={{ fontSize: '14px', fontWeight: 700 }}>
-                  {ticket.roomBadge}
+        {(waitingTickets.length > 0
+          || inProgressTickets.length > 0
+          || completedTickets.length > 0) && (
+          <section className="technician-group-card tech-incident-group">
+            <h2 className="technician-group-title">
+              Sự cố ({waitingTickets.length + inProgressTickets.length + completedTickets.length})
+            </h2>
+            {waitingTickets.length > 0 && (
+              <div className="tech-incident-subsection">
+                <h3 className="tech-incident-subheading">
+                  Chờ tiếp nhận ({waitingTickets.length})
                 </h3>
-                <p style={{ fontSize: '13px', color: '#334155' }}>
-                  Lỗi: {ticket.description}
-                </p>
-                <p className="ticket-status-progress">
-                  Trạng thái: Đang sửa (Nhận lúc {ticket.acceptedAt})
-                </p>
-              </div>
-            ))}
-            <Pagination
-              totalItems={inProgressTickets.length}
-              page={inProgressPage}
-              onPageChange={setInProgressPage}
-            />
-          </>
-        )}
+                {displayedWaitingTickets.map((ticket) => (
+                  <div key={ticket.id} className="ticket-card urgent">
+                    <div className="badge-row" style={{ marginBottom: 2 }}>
+                      <span className="badge-red">{ticket.roomBadge}</span>
+                      <span className="badge-gray">Mã: {ticket.equipmentCode}</span>
+                    </div>
 
-        {/* Đã hoàn tất gần đây */}
-        {completedTickets.length > 0 && (
-          <section className="tech-completed-section">
-            <button
-              type="button"
-              className="tech-completed-toggle"
-              aria-expanded={showCompletedTickets}
-              aria-controls="completed-ticket-list"
-              onClick={() => setShowCompletedTickets((isVisible) => !isVisible)}
-            >
-              Đã hoàn tất trong ca ({completedTickets.length})
-              <ChevronDown size={18} aria-hidden="true" />
-            </button>
-            <div id="completed-ticket-list" hidden={!showCompletedTickets}>
-              {displayedCompletedTickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  className="ticket-card clickable"
-                  onClick={() => navigate(`/tech/ticket/${ticket.id}`)}
+                    <h3 className="equip-name" style={{ marginBottom: 0 }}>
+                      {ticket.equipmentName}
+                    </h3>
+                    <p className="ticket-meta">Báo lỗi: {ticket.reportedTime}</p>
+
+                    <details className="tech-ticket-description">
+                      <summary>
+                        <span className="ticket-quote-label">Mô tả lỗi từ người báo cáo:</span>
+                        <span className="tech-ticket-description-preview">{ticket.description}</span>
+                        <span className="tech-ticket-description-more" aria-hidden="true" />
+                      </summary>
+                      <div className="ticket-quote-box">"{ticket.description}"</div>
+                    </details>
+
+                    <p className="ticket-meta">
+                      Người báo: {ticket.reporterName} • {ticket.reportedTime}
+                    </p>
+
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ marginTop: '4px' }}
+                      disabled={acceptingTicketId === ticket.id}
+                      onClick={() => handleAcceptAndOpen(ticket)}
+                    >
+                      {acceptingTicketId === ticket.id ? 'Đang nhận phiếu...' : 'Nhận xử lý sự cố'}
+                    </button>
+                  </div>
+                ))}
+                <Pagination
+                  totalItems={waitingTickets.length}
+                  page={waitingPage}
+                  onPageChange={setWaitingPage}
+                />
+              </div>
+            )}
+
+            {inProgressTickets.length > 0 && (
+              <div className="tech-incident-subsection">
+                <h3 className="tech-incident-subheading">
+                  Đang xử lý ({inProgressTickets.length})
+                </h3>
+                {displayedInProgressTickets.map((ticket) => (
+                  <div
+                    key={ticket.id}
+                    className="ticket-card clickable"
+                    onClick={() => navigate(`/tech/ticket/${ticket.id}`)}
+                  >
+                    <h3 style={{ fontSize: '14px', fontWeight: 700 }}>
+                      {ticket.roomBadge}
+                    </h3>
+                    <p style={{ fontSize: '13px', color: '#334155' }}>
+                      Lỗi: {ticket.description}
+                    </p>
+                    <p className="ticket-status-progress">
+                      Trạng thái: Đang sửa (Nhận lúc {ticket.acceptedAt})
+                    </p>
+                  </div>
+                ))}
+                <Pagination
+                  totalItems={inProgressTickets.length}
+                  page={inProgressPage}
+                  onPageChange={setInProgressPage}
+                />
+              </div>
+            )}
+
+            {completedTickets.length > 0 && (
+              <section className="tech-completed-section tech-incident-subsection">
+                <button
+                  type="button"
+                  className="tech-completed-toggle"
+                  aria-expanded={showCompletedTickets}
+                  aria-controls="completed-ticket-list"
+                  onClick={() => setShowCompletedTickets((isVisible) => !isVisible)}
                 >
-                  <div style={{ fontSize: '13.5px', fontWeight: 600 }}>
-                    {ticket.equipmentName} • {ticket.roomBadge}
-                  </div>
-                  <div className="ticket-status-done">
-                    Hoàn tất lúc {ticket.completedDate}
-                  </div>
+                  Đã hoàn tất ({completedTickets.length})
+                  <ChevronDown size={18} aria-hidden="true" />
+                </button>
+                <div id="completed-ticket-list" hidden={!showCompletedTickets}>
+                  {displayedCompletedTickets.map((ticket) => (
+                    <div
+                      key={ticket.id}
+                      className="ticket-card clickable"
+                      onClick={() => navigate(`/tech/ticket/${ticket.id}`)}
+                    >
+                      <div style={{ fontSize: '13.5px', fontWeight: 600 }}>
+                        {ticket.equipmentName} • {ticket.roomBadge}
+                      </div>
+                      <div className="ticket-status-done">
+                        Hoàn tất lúc {ticket.completedDate}
+                      </div>
+                    </div>
+                  ))}
+                  <Pagination
+                    totalItems={completedTickets.length}
+                    page={completedPage}
+                    onPageChange={setCompletedPage}
+                    pageSize={completedPageSize}
+                  />
                 </div>
-              ))}
-              <Pagination
-                totalItems={completedTickets.length}
-                page={completedPage}
-                onPageChange={setCompletedPage}
-                pageSize={completedPageSize}
-              />
-            </div>
+              </section>
+            )}
           </section>
         )}
 

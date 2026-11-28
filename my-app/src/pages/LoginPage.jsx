@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MobileAppLayout from '../layouts/MobileAppLayout';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, login, loginAsGuest } = useAuth();
+  const requestedPath = location.state?.from?.pathname;
+  const reportDestination = requestedPath?.startsWith('/report/')
+    ? requestedPath
+    : '/report';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,8 +21,8 @@ export default function LoginPage() {
     if (!user) return;
     if (user.role === 'TECHNICIAN') navigate('/tech', { replace: true });
     else if (user.role === 'ADMIN') navigate('/admin', { replace: true });
-    else if (user.role === 'REPORTER') navigate('/report', { replace: true });
-  }, [user, navigate]);
+    else if (user.role === 'REPORTER') navigate(reportDestination, { replace: true });
+  }, [user, navigate, reportDestination]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,7 +32,7 @@ export default function LoginPage() {
       const loggedUser = await login(email, password);
       if (loggedUser.role === 'ADMIN') navigate('/admin');
       else if (loggedUser.role === 'TECHNICIAN') navigate('/tech');
-      else navigate('/report');
+      else navigate(reportDestination, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -37,7 +42,7 @@ export default function LoginPage() {
 
   const handleQuickGuestScan = () => {
     loginAsGuest();
-    navigate('/report');
+    navigate(reportDestination, { replace: true });
   };
 
   return (

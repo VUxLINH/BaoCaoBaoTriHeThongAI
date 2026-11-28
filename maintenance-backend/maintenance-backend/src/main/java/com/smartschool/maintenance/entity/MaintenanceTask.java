@@ -19,9 +19,18 @@ public class MaintenanceTask {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "equipment_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipment_id")
     private Equipment equipment;
+
+    @Column(name = "equipment_code")
+    private String equipmentCode;
+
+    @Column(name = "equipment_name")
+    private String equipmentName;
+
+    @Column(name = "equipment_room_name")
+    private String equipmentRoomName;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "technician_id", nullable = false)
@@ -52,6 +61,17 @@ public class MaintenanceTask {
 
     public Equipment getEquipment() { return equipment; }
     public void setEquipment(Equipment equipment) { this.equipment = equipment; }
+
+    public String getEquipmentCode() { return equipmentCode; }
+    public void setEquipmentCode(String equipmentCode) { this.equipmentCode = equipmentCode; }
+
+    public String getEquipmentName() { return equipmentName; }
+    public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; }
+
+    public String getEquipmentRoomName() { return equipmentRoomName; }
+    public void setEquipmentRoomName(String equipmentRoomName) {
+        this.equipmentRoomName = equipmentRoomName;
+    }
 
     public User getTechnician() { return technician; }
     public void setTechnician(User technician) { this.technician = technician; }

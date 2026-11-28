@@ -32,12 +32,23 @@ CREATE TABLE IF NOT EXISTS equipments (
     serial_number VARCHAR(255),
     responsible_unit VARCHAR(255),
     responsible_person VARCHAR(255),
+    responsible_technician_id BIGINT,
     warranty_expiry_date DATE,
     maintenance_interval_months INT,
     safety_notes TEXT,
     status VARCHAR(255),
     PRIMARY KEY (id),
     UNIQUE KEY uk_equipments_code (code)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS equipment_images (
+    equipment_id BIGINT NOT NULL,
+    content_type VARCHAR(100) NOT NULL,
+    image_data MEDIUMBLOB NOT NULL,
+    PRIMARY KEY (equipment_id),
+    CONSTRAINT fk_equipment_images_equipment
+        FOREIGN KEY (equipment_id) REFERENCES equipments (id)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS maintenance_reports (
@@ -85,7 +96,10 @@ CREATE TABLE IF NOT EXISTS shift_schedules (
 
 CREATE TABLE IF NOT EXISTS maintenance_tasks (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    equipment_id BIGINT NOT NULL,
+    equipment_id BIGINT,
+    equipment_code VARCHAR(255),
+    equipment_name VARCHAR(255),
+    equipment_room_name VARCHAR(255),
     technician_id BIGINT NOT NULL,
     scheduled_date DATE NOT NULL,
     scheduled_time TIME,
@@ -100,7 +114,8 @@ CREATE TABLE IF NOT EXISTS maintenance_tasks (
     KEY idx_maintenance_tasks_scheduled_date (scheduled_date),
     KEY idx_maintenance_tasks_status (status),
     CONSTRAINT fk_maintenance_tasks_equipment
-        FOREIGN KEY (equipment_id) REFERENCES equipments (id),
+        FOREIGN KEY (equipment_id) REFERENCES equipments (id)
+        ON DELETE SET NULL,
     CONSTRAINT fk_maintenance_tasks_technician
         FOREIGN KEY (technician_id) REFERENCES users (id)
 ) ENGINE=InnoDB;

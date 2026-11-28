@@ -36,6 +36,7 @@ public class Equipment {
     private String serialNumber;
     private String responsibleUnit;
     private String responsiblePerson;
+    private Long responsibleTechnicianId;
     private java.time.LocalDate warrantyExpiryDate;
     private Integer maintenanceIntervalMonths;
     @Column(columnDefinition = "TEXT")
@@ -88,6 +89,11 @@ public class Equipment {
 
     public String getResponsiblePerson() { return responsiblePerson; }
     public void setResponsiblePerson(String responsiblePerson) { this.responsiblePerson = responsiblePerson; }
+
+    public Long getResponsibleTechnicianId() { return responsibleTechnicianId; }
+    public void setResponsibleTechnicianId(Long responsibleTechnicianId) {
+        this.responsibleTechnicianId = responsibleTechnicianId;
+    }
 
     public java.time.LocalDate getWarrantyExpiryDate() { return warrantyExpiryDate; }
     public void setWarrantyExpiryDate(java.time.LocalDate warrantyExpiryDate) {

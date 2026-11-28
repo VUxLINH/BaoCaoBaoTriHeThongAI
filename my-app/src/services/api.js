@@ -56,6 +56,18 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(equipment),
     }),
+  deleteEquipment: (code) =>
+    request(`/equipments/${encodeURIComponent(code)}`, { method: 'DELETE' }),
+  uploadEquipmentImage: (code, image) => {
+    const formData = new FormData();
+    formData.append('image', image);
+    return request(`/equipments/${encodeURIComponent(code)}/image`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+  getEquipmentImageUrl: (code) =>
+    `${API_BASE_URL}/equipments/${encodeURIComponent(code)}/image`,
   updateEquipmentDetails: (code, details) =>
     request(`/equipments/${encodeURIComponent(code)}/details`, {
       method: 'PUT',

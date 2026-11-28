@@ -4,6 +4,11 @@ import { ChevronLeft } from 'lucide-react';
 import MobileAppLayout from '../../layouts/MobileAppLayout';
 import { api } from '../../services/api';
 
+function formatDisplayDate(value) {
+  const isoDate = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+  return isoDate ? `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}` : value;
+}
+
 export default function CreateReportPage({ equipments }) {
   const { code } = useParams();
   const navigate = useNavigate();
@@ -12,12 +17,14 @@ export default function CreateReportPage({ equipments }) {
   const [description, setDescription] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [equipmentImageAvailable, setEquipmentImageAvailable] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (equipment) {
       setRoomName(equipment.roomFullName || equipment.roomCode || '');
+      setEquipmentImageAvailable(null);
     }
   }, [equipment]);
 
@@ -96,6 +103,20 @@ export default function CreateReportPage({ equipments }) {
     }
   };
 
+  const equipmentDetails = [
+    ['Loại thiết bị', equipment.category],
+    ['Hãng sản xuất', equipment.manufacturer],
+    ['Model', equipment.model],
+    ['Ngày hết bảo hành', formatDisplayDate(equipment.warrantyExpiryDate)],
+    [
+      'Chu kỳ bảo trì',
+      equipment.maintenanceIntervalMonths
+        ? `${equipment.maintenanceIntervalMonths} tháng`
+        : '',
+    ],
+    ['KTV phụ trách', equipment.responsiblePerson],
+  ].filter(([, value]) => value !== null && value !== undefined && String(value).trim());
+
   return (
     <MobileAppLayout>
       <header className="white-topbar">
@@ -107,6 +128,21 @@ export default function CreateReportPage({ equipments }) {
 
       <div className="screen-body">
         <div className="info-card">
+          {equipmentImageAvailable !== false && (
+            <div className={`equipment-photo-frame${equipmentImageAvailable === null ? ' loading' : ''}`}>
+              {equipmentImageAvailable === null && (
+                <span className="equipment-photo-loading">Đang tải ảnh thiết bị...</span>
+              )}
+              <img
+                key={equipment.code}
+                className={`equipment-photo${equipmentImageAvailable ? ' loaded' : ''}`}
+                src={api.getEquipmentImageUrl(equipment.code)}
+                alt={`Ảnh ${equipment.name}`}
+                onLoad={() => setEquipmentImageAvailable(true)}
+                onError={() => setEquipmentImageAvailable(false)}
+              />
+            </div>
+          )}
           <div className="badge-row">
             <span className="badge-blue">Mã: {equipment.code}</span>
             <span className="badge-gray">Phòng: {equipment.roomCode}</span>
@@ -115,24 +151,43 @@ export default function CreateReportPage({ equipments }) {
           <div className="meta-table">
             <div className="meta-row">
               <span className="meta-label">Ngày lắp đặt:</span>
-              <span className="meta-value">{equipment.installedDate}</span>
+              <span className="meta-value">{equipment.installedDate || 'Chưa cập nhật'}</span>
             </div>
             <div className="meta-row">
               <span className="meta-label">Ngày bảo trì gần nhất:</span>
-              <span className="meta-value">{equipment.lastMaintenanceDate}</span>
+              <span className="meta-value">{equipment.lastMaintenanceDate || 'Chưa ghi nhận'}</span>
             </div>
             <div className="meta-row">
               <span className="meta-label">Ngày sửa gần nhất:</span>
-              <span className="meta-value">{equipment.lastRepairDate}</span>
+              <span className="meta-value">{equipment.lastRepairDate || 'Chưa ghi nhận'}</span>
             </div>
             <div className="meta-row">
               <span className="meta-label">Trạng thái hiện tại:</span>
-              <span className="meta-value green">{equipment.status}</span>
+              <span className="meta-value green">{equipment.status || 'Chưa xác định'}</span>
             </div>
           </div>
+          <details className="equipment-details">
+            <summary>Thông tin chi tiết thiết bị</summary>
+            {equipmentDetails.length ? (
+              <div className="equipment-detail-grid">
+                {equipmentDetails.map(([label, value]) => (
+                  <div className="equipment-detail-item" key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="equipment-details-empty">Chưa có thông tin chi tiết.</p>
+            )}
+          </details>
         </div>
 
         <form onSubmit={handleSubmit} className="form-stack">
+          <div className="equipment-report-heading">
+            <h3>Báo cáo sự cố</h3>
+            <p>Mô tả tình trạng thiết bị để hệ thống điều phối hỗ trợ.</p>
+          </div>
           <div className="form-group">
             <label>Số phòng bị hỏng *</label>
             <input
